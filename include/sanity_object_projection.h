@@ -4,6 +4,7 @@
 #include <string>
 #include "sanity_query.h"
 #include "sanity_path.h"
+#include "sanity_part_builder.h"
 
 using namespace std;
 
@@ -16,12 +17,10 @@ class SanityObjectProjectionProperty : public SanityPartBuilder {
 private:
     /** @var rename for the property */
     string m_rename;
-    /** @var path to connect to */
-    SanityPath* m_path = nullptr;
+    /** @var value to use */
+    SanityPartBuilder* m_value = nullptr;
     /** @var sub projection */
     SanityObjectProjection* m_subprojection = nullptr;
-    /** @var sub query */
-    SanityQuery* m_subquery = nullptr;
 
 public:
     SanityObjectProjectionProperty();
@@ -32,14 +31,12 @@ public:
     ~SanityObjectProjectionProperty();
 
     void SetRename(string rename);
-    void SetPath(const SanityPath& path);
+    void SetValue(const SanityPartBuilder& value);
     void SetSubprojection(const SanityObjectProjection& projection);
-    void SetSubquery(const SanityQuery& query);
 
     string Rename() const;
-    SanityPath* Path() const;
+    SanityPartBuilder* Value() const;
     SanityObjectProjection* Subprojection() const;
-    SanityQuery* Subquery() const;
     SanityPartBuilder* clone() const override;
     string build() const override;
 };

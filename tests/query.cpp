@@ -77,7 +77,7 @@ TEST_CASE("Test query") {
         subq.SetFilter(subq_filter);
         SanityObjectProjection subq_proj;
         subq.SetProjection(subq_proj);
-        subq_prop.SetSubquery(subq);
+        subq_prop.SetValue(subq);
         proj.AddProperty(subq_prop);
         query.SetProjection(proj);
 

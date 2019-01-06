@@ -8,8 +8,9 @@ SanityObjectProjectionProperty::SanityObjectProjectionProperty() {
 
 SanityObjectProjectionProperty::SanityObjectProjectionProperty(string name, string rename)
     : SanityObjectProjectionProperty() {
-    this->m_path = new SanityPath();
-    this->m_path->AddPart(name);
+    SanityPath* p = new SanityPath();
+    p->AddPart(name);
+    this->m_value = p;
     this->m_rename = rename;
 }
 
@@ -18,28 +19,24 @@ SanityObjectProjectionProperty::SanityObjectProjectionProperty(const SanityObjec
 
     this->m_rename = prop.Rename();
 
-    if(prop.Path() != nullptr) {
-        SanityPath* p = new SanityPath(*prop.Path());
-        this->m_path = p;
+    if(prop.m_value != nullptr) {
+        SanityPartBuilder* p = prop.m_value->clone();
+        this->m_value = p;
     }
 
     if(prop.Subprojection() != nullptr) {
-        SanityObjectProjection* subproj = new SanityObjectProjection(*prop.Subprojection());
+        SanityObjectProjection* subproj = (SanityObjectProjection*)prop.m_subprojection->clone();
         this->m_subprojection = subproj;
     }
 }
 
 SanityObjectProjectionProperty::~SanityObjectProjectionProperty() {
-    if(this->m_path != nullptr) {
-        delete this->m_path;
+    if(this->m_value != nullptr) {
+        delete this->m_value;
     }
 
     if(this->m_subprojection != nullptr) {
         delete this->m_subprojection;
-    }
-
-    if(this->m_subquery != nullptr) {
-        delete this->m_subquery;
     }
 }
 
@@ -52,11 +49,11 @@ void SanityObjectProjectionProperty::SetRename(string rename) {
 }
 
 /**
- * Sets the path to use
- * @param const SanityPath& path
+ * Sets the query to use
+ * @param const SanityQuery* query
  */
-void SanityObjectProjectionProperty::SetPath(const SanityPath& path) {
-    this->m_path = (SanityPath*)path.clone();
+void SanityObjectProjectionProperty::SetValue(const SanityPartBuilder& query) {
+    this->m_value = query.clone();
 }
 
 /**
@@ -65,14 +62,6 @@ void SanityObjectProjectionProperty::SetPath(const SanityPath& path) {
  */
 void SanityObjectProjectionProperty::SetSubprojection(const SanityObjectProjection& projection) {
     this->m_subprojection = (SanityObjectProjection*)projection.clone();
-}
-
-/**
- * Sets the query to use
- * @param const SanityQuery* query
- */
-void SanityObjectProjectionProperty::SetSubquery(const SanityQuery& query) {
-    this->m_subquery = (SanityQuery*)query.clone();
 }
 
 /**
@@ -87,9 +76,9 @@ string SanityObjectProjectionProperty::Rename() const {
  * Returns the property path
  * @reutrn SanityPath const
  */
-SanityPath* SanityObjectProjectionProperty::Path() const {
-    if(this->m_path != nullptr) {
-        return new SanityPath(*this->m_path);
+SanityPartBuilder* SanityObjectProjectionProperty::Value() const {
+    if(this->m_value != nullptr) {
+        return this->m_value->clone();
     }
 
     return nullptr;
@@ -108,35 +97,19 @@ SanityObjectProjection* SanityObjectProjectionProperty::Subprojection() const {
 }
 
 /**
- * Gets the current subquery
- * @return SanityQuery* const
- */
-SanityQuery* SanityObjectProjectionProperty::Subquery() const {
-    if(this->m_subquery != nullptr) {
-        return (SanityQuery*)this->m_subquery->clone();
-    }
-
-    return nullptr;
-}
-
-/**
  * Creates a clone of the object projection property
  * @return SanityPartBuilder* const
  */
 SanityPartBuilder* SanityObjectProjectionProperty::clone() const {
     SanityObjectProjectionProperty* prop = new SanityObjectProjectionProperty;
     prop->SetRename(this->m_rename);
-    if(this->m_path != nullptr) {
-        SanityPath* path_copy = (SanityPath*)this->m_path->clone();
-        prop->SetPath(*path_copy);
+    if(this->m_value != nullptr) {
+        SanityPartBuilder* value_copy = (SanityPartBuilder*)this->m_value->clone();
+        prop->SetValue(*value_copy);
     }
     if(this->m_subprojection != nullptr) {
         SanityObjectProjection* proj_copy = (SanityObjectProjection*)this->m_subprojection->clone();
         prop->SetSubprojection(*proj_copy);
-    }
-    if(this->m_subquery != nullptr) {
-        SanityQuery* query_copy = (SanityQuery*)this->m_subquery->clone();
-        prop->SetSubquery(*query_copy);
     }
     return prop;
 }
@@ -148,28 +121,26 @@ SanityPartBuilder* SanityObjectProjectionProperty::clone() const {
 string SanityObjectProjectionProperty::build() const {
     bool hasRename = !this->m_rename.empty();
     bool hasSubprojection = this->m_subprojection != nullptr;
-    bool hasSubquery = this->m_subquery != nullptr;
+    bool hasValue = this->m_value != nullptr;
 
     if (
         !hasRename
         && !hasSubprojection
     ) {
-        return this->m_path->build();
+        return this->m_value->build();
     }
 
     if (
         !hasRename
         && hasSubprojection
     ) {
-        return this->m_path->build() + this->m_subprojection->build();
+        return this->m_value->build() + this->m_subprojection->build();
     }
 
     string built_prop =
         SanityString::QuoteWrap(this->m_rename) +
         ":" +
-        (hasSubquery ?
-            this->m_subquery->build()
-            : this->m_path->build());
+        this->m_value->build();
 
     if (hasSubprojection) {
         built_prop = built_prop + this->m_subprojection->build();

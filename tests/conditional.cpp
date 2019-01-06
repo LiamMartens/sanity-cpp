@@ -33,7 +33,7 @@ TEST_CASE("Test conditional") {
 
         SanityObjectProjectionProperty query_prop;
         query_prop.SetRename("awards");
-        query_prop.SetSubquery(query);
+        query_prop.SetValue(query);
 
         cond_proj.AddProperty(query_prop);
 

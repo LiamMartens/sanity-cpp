@@ -21,6 +21,7 @@ set(
     sanity_select.cpp
     sanity_create.cpp
     sanity_delete.cpp
+    sanity_patch.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${SANITYCPP_SOURCES})

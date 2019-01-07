@@ -4,17 +4,29 @@
 
 TEST_CASE("Build URL") {
     SanityUrl u;
+    u.SetScheme(SanityUrl::SCHEME_HTTPS);
+    u.SetHostname("example.com");
+    u.PushPath("foo");
+    u.PushPath("bar");
+    u.SetFragment("page1");
+    u.InsertQueryPart("hello", "world");
+    u.InsertQueryPart("good", "day");
 
     SECTION("Should build a URL") {
-        u.SetScheme("https");
-        u.SetHostname("example.com");
-        u.SetFragment("page1");
-        u.PushPath("foo");
-        u.PushPath("bar");
-        u.InsertQueryPart("hello", "world");
-        u.InsertQueryPart("good", "day");
         REQUIRE(
             u.build() == "https://example.com/foo/bar?good=day&hello=world#page1"
+        );
+    }
+
+    SECTION("Should copy a url object") {
+        SanityUrl u_copy = u;
+        REQUIRE(
+            u_copy.build() == "https://example.com/foo/bar?good=day&hello=world#page1"
+        );
+        
+        SanityUrl* u_clone = (SanityUrl*)u.clone();
+        REQUIRE(
+            u_clone->build() == "https://example.com/foo/bar?good=day&hello=world#page1"
         );
     }
 }

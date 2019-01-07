@@ -1,80 +1,188 @@
 #include "sanity_url.h"
+#include <iostream>
 
+#pragma region scheme constants
+const string SanityUrl::SCHEME_HTTP = "http";
+const string SanityUrl::SCHEME_HTTPS = "https";
+const string SanityUrl::SCHEME_FTP = "ftp";
+const string SanityUrl::SCHEME_FTPS = "ftps";
+const string SanityUrl::SCHEME_FILE = "file";
+#pragma endregion
+
+#pragma region regexes
+const regex SanityUrl::RX_HOSTNAME = regex("(([a-zA-Z0-9]+\\.)+([a-zA-Z0-9]+))", regex::extended);
+#pragma endregion
+
+#pragma region constructors
 SanityUrl::SanityUrl() {
     this->m_type = SanityPartBuilderType::SURL;
 }
 
+SanityUrl::SanityUrl(string parse)
+    : SanityUrl() {
+    string leftover = parse;
+
+    // extract scheme
+    size_t scheme_idx = leftover.find(':');
+    if(scheme_idx == string::npos) {
+        throw NoSchemeException();
+    }
+    string scheme = leftover.substr(0, scheme_idx);
+    this->SetScheme(scheme);
+    leftover = leftover.substr(scheme_idx + 3);
+
+    // extract hostname
+    smatch hostname_match;
+    regex_search(leftover, hostname_match, SanityUrl::RX_HOSTNAME);
+    if(hostname_match.size() < 2) {
+        throw InvalidHostnameException();
+    } else {
+        string hostname = string(hostname_match[0]);
+        this->SetHostname(hostname);
+        leftover = leftover.substr(hostname.size());
+    }
+
+    // extract path
+    size_t next_path_idx = leftover.find('/');
+    while(next_path_idx != string::npos) {
+        string part = leftover.substr(0, next_path_idx);
+        leftover = leftover.substr(next_path_idx + 1);
+        next_path_idx = leftover.find('/');
+        if(!part.empty()) {
+            this->PushPath(part);
+        }
+    }
+    next_path_idx = leftover.find_first_of("?#");
+    string last_part = next_path_idx == string::npos ? leftover : leftover.substr(0, next_path_idx);
+    if(!last_part.empty()) {
+        this->PushPath(last_part);
+        leftover = leftover.substr(last_part.size());
+    }
+
+    // extract fragment
+    size_t fragment_start_idx = leftover.find('#');
+    if(fragment_start_idx != string::npos) {
+        this->SetFragment(leftover.substr(fragment_start_idx + 1));
+        leftover = leftover.substr(0, fragment_start_idx);
+    }
+
+    // extract query
+    if(!leftover.empty()) {
+        size_t query_start_idx = leftover.find('?');
+        if(query_start_idx != string::npos) {
+            leftover = leftover.substr(1);
+            vector<string> params = SanityString::Split(leftover, '&');
+            for(auto p : params) {
+                vector<string> keyval = SanityString::Split(p, '=');
+                if(keyval.size() == 2) {
+                    string value = keyval[1];
+                    int outlength;
+                    value = curl_easy_unescape(nullptr, value.c_str(), value.size(), &outlength);
+                    this->InsertQueryPart(keyval[0], value);
+                } else {
+                    this->InsertQueryPart(keyval[0], "");
+                }
+            }
+        }
+    }
+}
+
+SanityUrl::SanityUrl(const SanityUrl& url) {
+    this->m_scheme = url.m_scheme;
+    this->m_hostname = url.m_hostname;
+    this->m_port = url.m_port;
+    this->m_fragment = url.m_fragment;
+    for(auto part : url.m_path) {
+        this->PushPath(part);
+    }
+    for(auto part : url.m_query) {
+        this->InsertQueryPart(part.first, part.second);
+    }
+}
+#pragma endregion
+
+#pragma region getters
 /**
- * Returns the current scheme
- * @return string
+ * Gets the string equivalent of the HTTP scheme
+ * @return string const
  */
-string SanityUrl::Scheme() {
+string SanityUrl::Scheme() const {
     return this->m_scheme;
 }
 
 /**
- * Returns the current hostname
- * @return string
+ * Gets the hostname
+ * @return string const
  */
-string SanityUrl::Hostname() {
+string SanityUrl::Hostname() const {
     return this->m_hostname;
 }
 
 /**
- * Returns the current port
+ * Gets the port
  * @return unsigned int
  */
-unsigned int SanityUrl::Port() {
+unsigned int SanityUrl::Port() const {
     return this->m_port;
 }
 
 /**
- * Returns the path vector
+ * Gets the path
  * @return vector<string>
  */
-vector<string> SanityUrl::Path() {
-    return this->m_path;
+vector<string> SanityUrl::Path() const {
+    vector<string> path_copy;
+    for(auto part : this->m_path) {
+        path_copy.push_back(part);
+    }
+    return path_copy;
 }
 
 /**
- * Returns the current query map
+ * Gets the query copy
  * @return map<string, string>
  */
-map<string, string> SanityUrl::Query() {
-    return this->m_query;
-}
-
-/**
- * Returns the current fragment
- * @return string
- */
-string SanityUrl::Fragment() {
-    return this->m_fragment;
-}
-
-/**
- * Sets the URL scheme
- * @param string scheme The new scheme to set
- * @return Url*
- */
-void SanityUrl::SetScheme(string scheme) {
-    if (
-        scheme == SanityUrl::SCHEME_HTTP ||
-        scheme == SanityUrl::SCHEME_HTTPS ||
-        scheme == SanityUrl::SCHEME_FTP ||
-        scheme == SanityUrl::SCHEME_FTPS ||
-        scheme == SanityUrl::SCHEME_FILE
-    ) {
-        this->m_scheme = scheme;
-    } else {
-        throw InvalidSchemeException();
+map<string, string> SanityUrl::Query() const {
+    map<string, string> query_copy;
+    for(auto part : this->m_query) {
+        query_copy.insert(pair<string, string>(
+            part.first,
+            part.second
+        ));
     }
 }
 
 /**
- * Sets the URL hostname
- * @param string hostname The new hostname
- * @return Url*
+ * Gets the fragment
+ * @return string const
+ */
+string SanityUrl::Fragment() const {
+    return this->m_fragment;
+}
+#pragma endregion
+
+#pragma region setters
+/**
+ * Sets the url scheme
+ * @param string scheme
+ */
+void SanityUrl::SetScheme(string scheme) {
+    if(
+        scheme != SanityUrl::SCHEME_HTTP &&
+        scheme != SanityUrl::SCHEME_HTTPS &&
+        scheme != SanityUrl::SCHEME_FTP &&
+        scheme != SanityUrl::SCHEME_FTPS &&
+        scheme != SanityUrl::SCHEME_FILE
+    ) {
+        throw InvalidSchemeException();
+    } else {
+        this->m_scheme = scheme;
+    }
+}
+
+/**
+ * Sets the url hostname
+ * @param string hostname
  */
 void SanityUrl::SetHostname(string hostname) {
     if(regex_match(hostname, SanityUrl::RX_HOSTNAME)) {
@@ -85,9 +193,8 @@ void SanityUrl::SetHostname(string hostname) {
 }
 
 /**
- * Sets the URL port
+ * Sets the url port
  * @param unsigned int port
- * @return Url*
  */
 void SanityUrl::SetPort(unsigned int port) {
     if(
@@ -101,36 +208,32 @@ void SanityUrl::SetPort(unsigned int port) {
 }
 
 /**
- * Pushes a path part
- * @param string path Path part
- * @return Url*
+ * Pushes a path part to the url
+ * @param string path
  */
 void SanityUrl::PushPath(string path) {
     this->m_path.push_back(path);
 }
 
 /**
- * Pops a path part
- * @return Url*
+ * Pops a path back out
  */
 void SanityUrl::PopPath() {
     this->m_path.pop_back();
 }
 
 /**
- * Inserts query part
- * @param string name Name of the query part
- * @param string value Value of the query part
- * @return Url*
+ * Inserts a query part
+ * @param string name
+ * @param string value
  */
 void SanityUrl::InsertQueryPart(string name, string value) {
     this->m_query.insert(pair<string, string>(name, value));
 }
 
 /**
- * Removes  a query part
- * @param string name Name of the query part to remove
- * @return Url*
+ * Removes a query part
+ * @param string name
  */
 void SanityUrl::RemoveQueryPart(string name) {
     this->m_query.erase(name);
@@ -138,60 +241,55 @@ void SanityUrl::RemoveQueryPart(string name) {
 
 /**
  * Sets the url fragment
- * @param string fragment The new fragment
- * @return Url*
+ * @param string fragment
  */
 void SanityUrl::SetFragment(string fragment) {
     this->m_fragment = fragment;
 }
+#pragma endregion
 
 /**
- * Creates a copy of the url object
+ * Creates a clone of the url object
  * @return SanityPartBuilder* const
  */
 SanityPartBuilder* SanityUrl::clone() const {
-    return new SanityUrl(*this);
+    SanityUrl* url = new SanityUrl();
+    url->m_scheme = this->m_scheme;
+    url->m_hostname = this->m_hostname;
+    url->m_port = this->m_port;
+    url->m_fragment = this->m_fragment;
+    for(auto part : this->m_path) {
+        url->PushPath(part);
+    }
+    for(auto part : this->m_query) {
+        url->InsertQueryPart(part.first, part.second);
+    }
+    return url;
 }
 
 /**
- * Builds the URL
+ * Builds the url
  * @return string const
  */
 string SanityUrl::build() const {
-    string path = "";
-    vector<string>::const_iterator path_it;
-    for(
-        path_it = this->m_path.begin();
-        path_it != this->m_path.end();
-        ++path_it
-    ) {
-        path += "/" + *path_it;
-    }
+    string path = SanityString::Join(this->m_path, "/");
 
-    // build query string
     string query = "";
-    map<string, string>::const_iterator query_it;
-    for(
-        query_it = this->m_query.begin();
-        query_it != this->m_query.end();
-        ++query_it
-    ) {
-        if(query != "") {
-            query += "&";
+    for(auto part : this->m_query) {
+        if(!query.empty()) {
+            query = query + "&";
         }
-        string key = (*query_it).first;
+        string key = part.first;
         key = curl_easy_escape(nullptr, key.c_str(), strlen(key.c_str()));
-        string value = (*query_it).second;
+        string value = part.second;
         value = curl_easy_escape(nullptr, value.c_str(), strlen(value.c_str()));
-        query += key + "=" + value;
+        query = query + key + "=" + value;
     }
 
-    return
-        this->m_scheme +
-        "://" +
-        this->m_hostname +
-        (this->m_port == 0 ? "" : ":" + to_string(this->m_port)) +
-        path +
-        "?" + query +
-        (this->m_fragment != "" ? "#" + this->m_fragment : "");
+    string port = (this->m_port == 0 ? "" : ":" + to_string(this->m_port));
+    path = path.empty() ? "" : "/" + path;
+    query = query.empty() ? "" : "?" + query;
+    string fragment = (this->m_fragment != "" ? "#" + this->m_fragment : "");
+
+    return this->Scheme() + "://" + this->m_hostname + port + path + query + fragment;
 }

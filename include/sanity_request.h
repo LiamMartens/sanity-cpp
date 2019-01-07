@@ -7,7 +7,11 @@
 #include <thread>
 #include <nlohmann/json.hpp>
 #include <curl/curl.h>
+#include <syslog.h>
+#include "sanity_url.h"
+#include "sanity_part_builder.h"
 
+using json = nlohmann::json;
 using namespace std;
 
 struct InvalidMethodException
@@ -23,19 +27,27 @@ struct SanityRequestResponse
     map<string, string> Headers;
 };
 
+enum class SanityRequestMethod {
+    GET = 1,
+    POST,
+    PUT,
+    PATCH,
+    DELETE
+};
+
 class SanityRequest
 {
-
-    const string HTTP_METHOD_GET = "GET";
-    const string HTTP_METHOD_POST = "POST";
-    const string HTTP_METHOD_DELETE = "DELETE";
-    const string HTTP_METHOD_PUT = "PUT";
-
 private:
+    const string HTTP_GET = "GET";
+    const string HTTP_POST = "POST";
+    const string HTTP_PUT = "PUT";
+    const string HTTP_PATCH = "PATCH";
+    const string HTTP_DELETE = "DELETE";
+
     /** the http method to call with */
-    string m_method = SanityRequest::HTTP_METHOD_GET;
+    SanityRequestMethod m_method = SanityRequestMethod::GET;
     /** URL to request to */
-    string m_url = "";
+    SanityUrl m_url;
     /** optional authorization token */
     string m_token = "";
     /** headers to send */
@@ -45,7 +57,6 @@ private:
     /** response data */
     SanityRequestResponse m_response = {};
 
-    /** */
     void (*m_when_done)(SanityRequestResponse r) = nullptr;
     void (*m_on_data)(char* data) = nullptr;
 
@@ -55,16 +66,24 @@ private:
 public:
     SanityRequest(string url, string token = "");
 
+    #pragma region getters
     string Token();
-    string Method();
+    SanityRequestMethod Method();
+    string Verb();
     SanityRequestResponse Response();
+    #pragma endregion
 
-    SanityRequest* SetHeader(string name, string value);
-    SanityRequest* UnsetHeader(string name);
-    SanityRequest* SetToken(string token);
-    SanityRequest* SetMethod(string method);
-    SanityRequest* SetWhenDone(void(when_done)(SanityRequestResponse r));
-    SanityRequest* SetOnData(void(on_data)(char* data));
+    #pragma region setters
+    void SetHeader(string name, string value);
+    void UnsetHeader(string name);
+    void SetToken(string token);
+    void SetMethod(SanityRequestMethod method);
+    void SetData(string data);
+    void SetData(const SanityPartBuilder& builder);
+    void SetData(json data);
+    void SetWhenDone(void(when_done)(SanityRequestResponse r));
+    void SetOnData(void(on_data)(char* data));
+    #pragma endregion
 
     thread perform();
 };

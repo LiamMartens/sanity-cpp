@@ -10,8 +10,10 @@ using namespace std;
 class SanityString {
 public:
     static string QuoteWrap(string s);
-    static string Join(vector<SanityPartBuilder*> items);
-    static string Join(vector<SanityPartBuilder> items);
+    static vector<string> Split(string s, char c);
+    static string Join(vector<SanityPartBuilder*> items, string delim = ",");
+    static string Join(vector<SanityPartBuilder> items, string delim = ",");
+    static string Join(vector<string> items, string delim = ",");
 };
 
 #endif // SANITY_STRING_H

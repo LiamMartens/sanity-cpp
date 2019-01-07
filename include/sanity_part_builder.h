@@ -5,7 +5,7 @@
 
 using namespace std;
 
-enum SanityPartBuilderType {
+enum class SanityPartBuilderType {
     BOOLEAN_FILTER = 1,
     DEFINED_FILTER,
     EQUALITY_FILTER,

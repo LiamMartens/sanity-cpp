@@ -58,10 +58,29 @@ string SanityRequest::Token() {
 
 /**
  * Gets the http method
+ * @return SanityRequestMethod
+ */
+SanityRequestMethod SanityRequest::Method() {
+    return this->m_method;
+}
+
+/**
+ * Gets the http verb from the method
  * @return string
  */
-string SanityRequest::Method() {
-    return this->m_method;
+string SanityRequest::Verb() {
+    switch(this->m_method) {
+        case SanityRequestMethod::POST:
+            return this->HTTP_POST;
+        case SanityRequestMethod::PUT:
+            return this->HTTP_PUT;
+        case SanityRequestMethod::PATCH:
+            return this->HTTP_PATCH;
+        case SanityRequestMethod::DELETE:
+            return this->HTTP_DELETE;
+        default:
+            return this->HTTP_GET;
+    }
 }
 
 /**
@@ -78,71 +97,88 @@ SanityRequestResponse SanityRequest::Response() {
  * Sets a header to the request
  * @param string name The header key
  * @param string value The header value
- * @return SanityRequest*
  */
-SanityRequest* SanityRequest::SetHeader(string name, string value) {
+void SanityRequest::SetHeader(string name, string value) {
     this->m_headers.insert(
         pair<string, string>(
             name,
             value
         )
     );
-    return this;
 }
 
 /**
  * Unsets a certain header
  * @param string name The header key
- * @return SanityRequest*
  */
-SanityRequest* SanityRequest::UnsetHeader(string name) {
+void SanityRequest::UnsetHeader(string name) {
     this->m_headers.erase(name);
-    return this;
 }
 
 /**
  * Sets the authorization token
  * @param string token The request token
- * @return SanityRequest*
  */
-SanityRequest* SanityRequest::SetToken(string token) {
+void SanityRequest::SetToken(string token) {
     this->m_token = token;
-    return this;
 }
 
 /**
  * Sets the HTTP method
  * @param string method New method
- * @return SanityRequest*
  */
-SanityRequest* SanityRequest::SetMethod(string method) {
+void SanityRequest::SetMethod(SanityRequestMethod method) {
     if(
-        method == SanityRequest::HTTP_METHOD_GET ||
-        method == SanityRequest::HTTP_METHOD_POST ||
-        method == SanityRequest::HTTP_METHOD_DELETE ||
-        method == SanityRequest::HTTP_METHOD_PUT
+        method == SanityRequestMethod::GET ||
+        method == SanityRequestMethod::POST ||
+        method == SanityRequestMethod::DELETE ||
+        method == SanityRequestMethod::PUT ||
+        method == SanityRequestMethod::PATCH
     ) {
-        this->m_method = method;
+        this->m_method = SanityRequestMethod(method);
     } else {
         throw InvalidMethodException();
     }
+}
 
-    return this;
+/**
+ * Simple data
+ * @param string data
+ */
+void SanityRequest::SetData(string data) {
+    this->m_data = data;
+}
+
+/**
+ * Builder data
+ * @param const SanityPartBuilder& builder
+ */
+void SanityRequest::SetData(const SanityPartBuilder& builder) {
+    this->m_data = builder.build();
+}
+
+/**
+ * Json data
+ * @param json data
+ */
+void SanityRequest::SetData(json data) {
+    this->m_data = data.dump();
 }
 
 /**
  * Sets the when done handler
  * @param void(*when_done)(SanityRequestResponse r)
- * @return SanityReauest*
  */
-SanityRequest* SanityRequest::SetWhenDone(void(*when_done)(SanityRequestResponse r)) {
+void SanityRequest::SetWhenDone(void(*when_done)(SanityRequestResponse r)) {
     this->m_when_done = when_done;
-    return this;
 }
 
-SanityRequest* SanityRequest::SetOnData(void(*on_data)(char* data)) {
+/**
+ * Sets on data handler
+ * @param void(*on_data)(char* data)
+ */
+void SanityRequest::SetOnData(void(*on_data)(char* data)) {
     this->m_on_data = on_data;
-    return this;
 }
 #pragma endregion
 
@@ -158,17 +194,18 @@ thread SanityRequest::perform() {
 
     CURL* handle;
     handle = curl_easy_init();
-    curl_easy_setopt(handle, CURLOPT_URL, this->m_url.c_str());
+    curl_easy_setopt(handle, CURLOPT_URL, this->m_url.build().c_str());
+    printf("url %s\n", this->m_url.build().c_str());
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, &SanityRequest::request_write_callback);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)this);
     curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, &SanityRequest::request_header_callback);
     curl_easy_setopt(handle, CURLOPT_HEADERDATA, (void*)this);
 
     // check http method
-    if(this->m_method == SanityRequest::HTTP_METHOD_POST) {
+    if(this->m_method == SanityRequestMethod::POST) {
         curl_easy_setopt(handle, CURLOPT_POST, true);
-    } else if(this->m_method != SanityRequest::HTTP_METHOD_GET) {
-        curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, this->m_method.c_str());
+    } else if(this->m_method != SanityRequestMethod::GET) {
+        curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, this->Verb().c_str());
     }
 
     if(this->m_data != "") {
@@ -201,7 +238,9 @@ thread SanityRequest::perform() {
     auto curl_task = [handle, response, when_done]() {
         CURLcode resp_code = curl_easy_perform(handle);
         if(resp_code != CURLE_OK) {
-            throw curl_easy_strerror(resp_code);
+            string err = curl_easy_strerror(resp_code);
+            syslog(LOG_ERR, "%s\n", err.c_str());
+            throw err;
         }
         curl_easy_cleanup(handle);
 
@@ -213,4 +252,3 @@ thread SanityRequest::perform() {
     thread curl_task_thread(curl_task);
     return curl_task_thread;
 }
-

@@ -2,12 +2,13 @@
 #define SANITY_DELETE_H
 
 #include "sanity_query.h"
+#include "sanity_mutation.h"
 #include "sanity_part_builder.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
-class SanityDelete : public SanityPartBuilder {
+class SanityDelete : public SanityMutation {
 private:
     /** @var The id to delete */
     string m_id;
@@ -22,6 +23,7 @@ public:
     SanityDelete(string id);
     SanityDelete(const SanityQuery& query);
 
+    json MutationObject() const override;
     SanityPartBuilder* clone() const override;
     string build() const override;
 };

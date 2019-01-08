@@ -21,6 +21,18 @@ void SanityCreate::SetObject(json object) {
 }
 
 /**
+ * Returns the full mutation object
+ * @return json
+ */
+json SanityCreate::MutationObject() const {
+    string cmd = this->m_replace ? "createOrReplace" : "createIfNotExists";
+    json obj = {
+        {cmd, this->m_object}
+    };
+    return obj;
+}
+
+/**
  * Creates a clone of the create object
  * @return SanityPartBuilder* const
  */
@@ -35,8 +47,8 @@ SanityPartBuilder* SanityCreate::clone() const {
  */
 string SanityCreate::build() const {
     if(this->m_object != nullptr) {
-        string cmd = this->m_replace ? "createOrReplace" : "createIfNotExists";
-        return "{\"" + cmd + "\":" + this->m_object.dump() + "}";
+        json obj = this->MutationObject();
+        return obj.dump();
     }
 
     throw NoObjectException();

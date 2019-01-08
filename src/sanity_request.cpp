@@ -192,10 +192,11 @@ thread SanityRequest::perform() {
         map<string, string>()
     };
 
+    printf("data %s\n", this->m_data.c_str());
+
     CURL* handle;
     handle = curl_easy_init();
     curl_easy_setopt(handle, CURLOPT_URL, this->m_url.build().c_str());
-    printf("url %s\n", this->m_url.build().c_str());
     curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, &SanityRequest::request_write_callback);
     curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)this);
     curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, &SanityRequest::request_header_callback);
@@ -209,7 +210,7 @@ thread SanityRequest::perform() {
     }
 
     if(this->m_data != "") {
-        curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->m_data);
+        curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->m_data.c_str());
     }
 
     // build header list

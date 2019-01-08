@@ -26,7 +26,8 @@ enum class SanityPartBuilderType {
     SELECT,
     CREATE,
     DELETE,
-    PATCH
+    PATCH,
+    MUTATIONS
 };
 
 class SanityPartBuilder {

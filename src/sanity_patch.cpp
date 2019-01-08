@@ -26,6 +26,26 @@ void SanityPatch::SetQuery(const SanityQuery& query) {
 }
 
 /**
+ * Returns the full mutation object
+ * @return json
+ */
+json SanityPatch::MutationObject() const {
+    json body = this->m_data;
+    if(!this->m_revision_id.empty()) {
+        body["ifRevisionID"] = this->m_revision_id;
+    }
+    if(this->m_query != nullptr) {
+        body["query"] = this->m_query->build();
+    }
+
+    json obj = {
+        {"patch", body}
+    };
+
+    return obj;
+}
+
+/**
  * Creates a clone of the patch mutation object
  * @return SanityPartBuilder* const
  */
@@ -42,15 +62,6 @@ SanityPartBuilder* SanityPatch::clone() const {
  * @return string const
  */
 string SanityPatch::build() const {
-    json body = this->m_data;
-
-    if(!this->m_revision_id.empty()) {
-        body["ifRevisionID"] = this->m_revision_id;
-    }
-
-    if(this->m_query != nullptr) {
-        body["query"] = this->m_query->build();
-    }
-
-    return "{\"patch\":" + body.dump() + "}";
+    json obj = this->MutationObject();
+    return obj.dump();
 }

@@ -15,6 +15,29 @@ SanityDelete::SanityDelete(const SanityQuery& query)
 }
 
 /**
+ * Returns complete mutation object
+ * @return json const
+ */
+json SanityDelete::MutationObject() const {
+    if(this->m_query != nullptr) {
+        json mut = {
+            {"delete", {
+                {"query", this->m_query->build()}
+            }}
+        };
+        return mut;
+    }
+
+    json mut = {
+        {"delete", {
+            {"id", this->m_id}
+        }}
+    };
+
+    return mut;
+}
+
+/**
  * Creates a clone of the delete mutation
  * @return SanityPartBuilder& const
  */
@@ -33,19 +56,6 @@ SanityPartBuilder* SanityDelete::clone() const {
  * @return string const
  */
 string SanityDelete::build() const {
-    if(this->m_query != nullptr) {
-        json mut = {
-            {"delete", {
-                {"query", this->m_query->build()}
-            }}
-        };
-        return mut.dump();
-    }
-
-    json mut = {
-        {"delete", {
-            {"id", this->m_id}
-        }}
-    };
+    json mut = this->MutationObject();
     return mut.dump();
 }

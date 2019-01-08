@@ -92,13 +92,27 @@ void SanityClient::UseCdn(bool useCdn) {
 /**
  * Performs a query
  * @param const SanityQuery& query The query to execute
- * @return json
+ * @return SanityRequest*
  */
 SanityRequest* SanityClient::query(const SanityQuery& query) {
-    string query_path = "data/query";
-    SanityUrl url(this->m_use_cdn ? this->ApiCdnUrl(query_path) : this->ApiUrl(query_path));
+    string path = "data/query";
+    SanityUrl url(this->m_use_cdn ? this->ApiCdnUrl(path) : this->ApiUrl(path));
     url.InsertQueryPart("query", query.build());
     SanityRequest* req = new SanityRequest(url.build(), this->m_token);
+    return req;
+}
+
+/**
+ * Ceates a mutation request
+ * @param const SanityMutation& mut
+ * @return SanityRequest*
+ */
+SanityRequest* SanityClient::mutate(const SanityMutations& mut) {
+    string path = "data/mutate";
+    SanityUrl url(this->m_use_cdn ? this->ApiCdnUrl(path) : this->ApiUrl(path));
+    SanityRequest* req = new SanityRequest(url.build(), this->m_token);
+    req->SetMethod(SanityRequestMethod::POST);
+    req->SetData(mut);
     return req;
 }
 #pragma endregion

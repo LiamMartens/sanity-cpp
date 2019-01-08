@@ -11,6 +11,8 @@
 #include "sanity_create.h"
 #include "sanity_patch.h"
 #include "sanity_delete.h"
+#include "sanity_mutation.h"
+#include "sanity_mutations.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -65,6 +67,7 @@ public:
     #pragma endregion
 
     SanityRequest* query(const SanityQuery& query);
+    SanityRequest* mutate(const SanityMutations& mut);
 };
 
 #endif // SANITY_CLIENT_H

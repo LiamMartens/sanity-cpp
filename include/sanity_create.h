@@ -2,6 +2,7 @@
 #define SANITY_CREATE_H
 
 #include "sanity_part_builder.h"
+#include "sanity_mutation.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -14,7 +15,7 @@ struct NoObjectException
     }
 };
 
-class SanityCreate : public SanityPartBuilder {
+class SanityCreate : public SanityMutation {
 private:
     /** @var Replace flag */
     bool m_replace = true;
@@ -28,6 +29,7 @@ public:
 
     void SetObject(json object);
 
+    json MutationObject() const override;
     SanityPartBuilder* clone() const override;
     string build() const override;
 };

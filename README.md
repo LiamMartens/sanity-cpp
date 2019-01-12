@@ -1,5 +1,6 @@
 # Sanity Cpp library
 ## Building and installing
+* Make sure you have the `curl` development files and the [nlohmann/json](https://github.com/nlohmann/json) library installed
 * Create a `build/` directory and `cd` into it
 * Run `cmake ..` to generate the makefile(s). You can disable building tests by disabling `DBUILD_TESTS`.
 * Run `make -j8` to build the library

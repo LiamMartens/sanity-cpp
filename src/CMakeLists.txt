@@ -31,6 +31,14 @@ set(
 )
 
 add_library(${PROJECT_NAME} SHARED ${SANITYCPP_SOURCES})
+
 target_link_libraries(${PROJECT_NAME} ${CURL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${nlohmann_json_LIBRARIES})
-install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+
+install(
+    TARGETS ${PROJECT_NAME}
+    LIBRARY
+    DESTINATION lib
+    ARCHIVE
+    DESTINATION lib
+)

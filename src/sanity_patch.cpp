@@ -1,16 +1,23 @@
 #include "sanity_patch.h"
 
-SanityPatch::SanityPatch(json data) {
+#pragma region constructors
+SanityPatch::SanityPatch() {
     this->m_type = SanityPartBuilderType::PATCH;
-    this->m_data = data;
 }
 
-SanityPatch::SanityPatch(const SanityPatch& path) {
-    this->m_data = path.m_data;
+SanityPatch::SanityPatch(string id)
+    : SanityPatch() {
+    this->m_id = id;
 }
+
+SanityPatch::SanityPatch(const SanityQuery& query)
+    : SanityPatch() {
+    this->m_query = (SanityQuery*)query.clone();
+}
+#pragma endregion
 
 /**
- * Sets the patch revision id check
+ * Sets the revision id
  * @param string id
  */
 void SanityPatch::SetRevisionId(string id) {
@@ -18,50 +25,63 @@ void SanityPatch::SetRevisionId(string id) {
 }
 
 /**
- * Sets the patch query param
- * @param const SanityQuery& query
+ * Adds a patch
+ * @param const SanityPatchMutation& patch
  */
-void SanityPatch::SetQuery(const SanityQuery& query) {
-    this->m_query = (SanityQuery*)query.clone();
+void SanityPatch::AddPatch(const SanityPatchMutation& patch) {
+    SanityPatchMutation* mut = (SanityPatchMutation*)patch.clone();
+    this->m_patches.push_back(mut);
 }
 
 /**
- * Returns the full mutation object
- * @return json
+ * Gets the json mutation object
+ * @return json const
  */
 json SanityPatch::MutationObject() const {
-    json body = this->m_data;
-    if(!this->m_revision_id.empty()) {
-        body["ifRevisionID"] = this->m_revision_id;
-    }
-    if(this->m_query != nullptr) {
-        body["query"] = this->m_query->build();
+    json data;
+
+    if(!this->m_id.empty()) {
+        data["id"] = this->m_id;
+    } else if(this->m_query != nullptr) {
+        data["query"] = this->m_query->build();
     }
 
-    json obj = {
-        {"patch", body}
+    for(auto p : this->m_patches) {
+        json o = json::parse(p->build());
+        data.merge_patch(o);
+    }
+
+    json mut = {
+        {"patch", data}
     };
 
-    return obj;
+    return mut;
 }
 
 /**
- * Creates a clone of the patch mutation object
+ * Creates a clone of the patch mutation
  * @return SanityPartBuilder* const
  */
 SanityPartBuilder* SanityPatch::clone() const {
-    SanityPatch* p = new SanityPatch(this->m_data);
-    p->SetRevisionId(this->m_revision_id);
-    SanityQuery* query_clone = (SanityQuery*)this->m_query->clone();
-    p->SetQuery(*query_clone);
-    return p;
+    SanityPatch* patch;
+    if(this->m_query == nullptr) {
+        patch = new SanityPatch(this->m_id);
+    } else {
+        patch = new SanityPatch(*this->m_query);
+    }
+    patch->SetRevisionId(this->m_revision_id);
+    for(auto p : this->m_patches) {
+        SanityPatchMutation* p_clone = (SanityPatchMutation*)p->clone();
+        patch->AddPatch(*p_clone);
+    }
+    return patch;
 }
 
 /**
- * Builds the patch mutation
- * @return string const
+ * Builds the patch
+ * @return string
  */
 string SanityPatch::build() const {
-    json obj = this->MutationObject();
-    return obj.dump();
+    json mut = this->MutationObject();
+    return mut.dump();
 }

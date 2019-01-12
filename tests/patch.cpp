@@ -1,39 +1,36 @@
-#include <nlohmann/json.hpp>
 #include "sanity_patch.h"
-#include "sanity_query.h"
-#include "sanity_filter.h"
-#include "sanity_equality_filter.h"
+#include "sanity_patch_unset_mutation.h"
+#include "sanity_patch_set_mutation.h"
+#include "sanity_patch_math_mutation.h"
+#include "sanity_patch_insert_mutation.h"
 #include "Catch2/single_include/catch2/catch.hpp"
 
-using json = nlohmann::json;
-using namespace std;
-
 TEST_CASE("Test patch mutation") {
-    json data = {
-        {"id", 1},
-        {"name", {
-            {"firstName", "Liam"},
-            {"lastName", "Martens"}
-        }}
-    };
+    SECTION("Test build") {
+        SanityPatch patch("my-id");
 
-    SanityPatch p(data);
+        json set_data = {{"name.first", "John"}};
+        SanityPatchSetMutation set_patch(set_data);
+        patch.AddPatch(set_patch);
 
-    SECTION("Test regular build") {
+        SanityPatchUnsetMutation unset_patch;
+        unset_patch.AddAttribute("name.last");
+        patch.AddPatch(unset_patch);
+
+        SanityPatchMathMutation math_patch("stats.visitorCount", (long)1);
+        patch.AddPatch(math_patch);
+
+        SanityPatchInsertMutation ins_patch;
+        json ins_data = {
+            {"_type", "reference"},
+            {"_ref", "person-1234"}
+        };
+        ins_patch.SetAfter("people[-1]");
+        ins_patch.AddItem(ins_data);
+        patch.AddPatch(ins_patch);
+
         REQUIRE(
-            p.build() == "{\"patch\":{\"id\":1,\"name\":{\"firstName\":\"Liam\",\"lastName\":\"Martens\"}}}"
-        );
-    }
-
-    SECTION("Test query/revision id build") {
-        SanityQuery q;
-        SanityFilter f;
-        f.AddPart(SanityEqualityFilter("param1", SanityEqualityFilterCondition::EQ, "param2"));
-        q.SetFilter(f);
-        p.SetQuery(q);
-        p.SetRevisionId("aaa-bbb");
-        REQUIRE(
-            p.build() == "{\"patch\":{\"id\":1,\"ifRevisionID\":\"aaa-bbb\",\"name\":{\"firstName\":\"Liam\",\"lastName\":\"Martens\"},\"query\":\"*[param1 == param2]\"}}"
+            patch.build() == "{\"patch\":{\"id\":\"my-id\",\"inc\":{\"stats.visitorCount\":1},\"insert\":{\"after\":\"people[-1]\",\"items\":[{\"_ref\":\"person-1234\",\"_type\":\"reference\"}]},\"set\":{\"name.first\":\"John\"},\"unset\":[\"name.last\"]}}"
         );
     }
 }

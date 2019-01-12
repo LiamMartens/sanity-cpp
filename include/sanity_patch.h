@@ -3,6 +3,7 @@
 
 #include "sanity_part_builder.h"
 #include "sanity_mutation.h"
+#include "sanity_patch_mutation.h"
 #include "sanity_query.h"
 #include <nlohmann/json.hpp>
 
@@ -11,18 +12,25 @@ using namespace std;
 
 class SanityPatch : public SanityMutation {
 private:
-    /** @var The revision id */
-    string m_revision_id;
+    /** @var The id to patch */
+    string m_id;
     /** @var The query to use */
     SanityQuery* m_query = nullptr;
-    /** @var data */
-    json m_data;
+
+    /** @var The patches to apply */
+    vector<SanityPatchMutation*> m_patches;
+    /** @var The revision id */
+    string m_revision_id;
+
+    SanityPatch();
 public:
-    SanityPatch(json data);
-    SanityPatch(const SanityPatch& patch);
+    #pragma region constructors
+    SanityPatch(string id);
+    SanityPatch(const SanityQuery& query);
+    #pragma endregion
 
     void SetRevisionId(string id);
-    void SetQuery(const SanityQuery& query);
+    void AddPatch(const SanityPatchMutation& patch);
 
     json MutationObject() const override;
     SanityPartBuilder* clone() const override;

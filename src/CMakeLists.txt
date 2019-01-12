@@ -22,6 +22,11 @@ set(
     sanity_create.cpp
     sanity_delete.cpp
     sanity_patch.cpp
+    sanity_patch_set_mutation.cpp
+    sanity_patch_unset_mutation.cpp
+    sanity_patch_insert_mutation.cpp
+    sanity_patch_math_mutation.cpp
+    sanity_patch_diffmatch_mutation.cpp
     sanity_mutations.cpp
 )
 

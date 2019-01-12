@@ -27,6 +27,11 @@ enum class SanityPartBuilderType {
     CREATE,
     DELETE,
     PATCH,
+    PATCH_SET,
+    PATCH_UNSET,
+    PATCH_INSERT,
+    PATCH_MATH,
+    PATCH_DIFFMATCH,
     MUTATIONS
 };
 

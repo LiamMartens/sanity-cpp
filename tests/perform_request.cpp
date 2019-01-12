@@ -28,6 +28,7 @@ TEST_CASE("Create a CURL request") {
 
         req.SetWhenDone(*when_done);
         req.SetOnData(*on_data);
+        req.DontParseBody();
         thread t = req.perform();
         t.join();
     }

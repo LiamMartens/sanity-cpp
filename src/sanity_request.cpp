@@ -10,11 +10,22 @@
  * @return size_t
  */
 size_t SanityRequest::request_write_callback(char* data, size_t size, size_t data_size, void* userdata) {
-    SanityRequest* resp = (SanityRequest*)userdata;
-    resp->m_response.Body += data;
-    if(resp->m_on_data != nullptr) {
-        resp->m_on_data(data);
+    SanityRequest* req = (SanityRequest*)userdata;
+
+    char copy[data_size + 1];
+    memcpy(copy, data, data_size);
+    copy[data_size] = '\0';
+    req->m_response.Body += string(copy);
+
+    if(req->m_on_data != nullptr) {
+        req->m_on_data(data);
     }
+
+    if(req->m_parse_body & req->m_on_parsed_data != nullptr) {
+        json parsed = json::parse(data);
+        req->m_on_parsed_data(parsed);
+    }
+
     return data_size;
 }
 
@@ -27,7 +38,11 @@ size_t SanityRequest::request_write_callback(char* data, size_t size, size_t dat
  * @return size_t
  */
 size_t SanityRequest::request_header_callback(char* data, size_t size, size_t data_size, void* userdata) {
-    string header = data;
+    char copy[data_size + 1];
+    memcpy(copy, data, data_size);
+    copy[data_size] = '\0';
+
+    string header = copy;
     size_t index = header.find_first_of(':');
     string name = header.substr(0, index);
     string value = header.substr(index + 1, header.length() - index);
@@ -93,6 +108,13 @@ SanityRequestResponse SanityRequest::Response() {
 #pragma endregion
 
 #pragma region setters
+/**
+ * Disables parsing the response body as json
+ */
+void SanityRequest::DontParseBody() {
+    this->m_parse_body = false;
+}
+
 /**
  * Sets a header to the request
  * @param string name The header key
@@ -180,6 +202,16 @@ void SanityRequest::SetWhenDone(void(*when_done)(SanityRequestResponse r)) {
 void SanityRequest::SetOnData(void(*on_data)(char* data)) {
     this->m_on_data = on_data;
 }
+
+/**
+ * Sets the on parsed data handler
+ * Only relevant when DontParseBody is not used
+ * This is useful when listening
+ * @param void(*on_parsed_data)(json data)
+ */
+void SanityRequest::SetOnParsedData(void(*on_parsed_data)(json data)) {
+    this->m_on_parsed_data = on_parsed_data;
+}
 #pragma endregion
 
 /**
@@ -191,8 +223,6 @@ thread SanityRequest::perform() {
         "",
         map<string, string>()
     };
-
-    printf("data %s\n", this->m_data.c_str());
 
     CURL* handle;
     handle = curl_easy_init();
@@ -235,8 +265,9 @@ thread SanityRequest::perform() {
 
     // perform request
     SanityRequestResponse* response = &this->m_response;
+    bool parse_body = this->m_parse_body;
     void (*when_done)(SanityRequestResponse r) = this->m_when_done;
-    auto curl_task = [handle, response, when_done]() {
+    auto curl_task = [handle, parse_body, response, when_done]() {
         CURLcode resp_code = curl_easy_perform(handle);
         if(resp_code != CURLE_OK) {
             string err = curl_easy_strerror(resp_code);
@@ -244,6 +275,10 @@ thread SanityRequest::perform() {
             throw err;
         }
         curl_easy_cleanup(handle);
+
+        if(parse_body) {
+            response->ParsedBody = json::parse(response->Body);
+        }
 
         if(when_done != nullptr) {
             when_done(*response);

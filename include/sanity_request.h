@@ -24,6 +24,7 @@ struct InvalidMethodException
 struct SanityRequestResponse
 {
     string Body;
+    json ParsedBody;
     map<string, string> Headers;
 };
 
@@ -44,21 +45,24 @@ private:
     const string HTTP_PATCH = "PATCH";
     const string HTTP_DELETE = "DELETE";
 
-    /** the http method to call with */
+    /** @var the http method to call with */
     SanityRequestMethod m_method = SanityRequestMethod::GET;
-    /** URL to request to */
+    /** @var URL to request to */
     SanityUrl m_url;
-    /** optional authorization token */
+    /** @var optional authorization token */
     string m_token = "";
-    /** headers to send */
+    /** @var headers to send */
     map<string, string> m_headers;
-    /** data to send */
+    /** @var data to send */
     string m_data = "";
-    /** response data */
+    /** @var whether to parse the body as JSON */
+    bool m_parse_body = true;
+    /** @var response data */
     SanityRequestResponse m_response = {};
 
     void (*m_when_done)(SanityRequestResponse r) = nullptr;
     void (*m_on_data)(char* data) = nullptr;
+    void (*m_on_parsed_data)(json data) = nullptr;
 
     static size_t request_write_callback(char* data, size_t size, size_t data_size, void* userdata);
     static size_t request_header_callback(char* data, size_t size, size_t data_size, void* userdata);
@@ -74,6 +78,7 @@ public:
     #pragma endregion
 
     #pragma region setters
+    void DontParseBody();
     void SetHeader(string name, string value);
     void UnsetHeader(string name);
     void SetToken(string token);
@@ -83,6 +88,7 @@ public:
     void SetData(json data);
     void SetWhenDone(void(when_done)(SanityRequestResponse r));
     void SetOnData(void(on_data)(char* data));
+    void SetOnParsedData(void(on_parsed_data)(json data));
     #pragma endregion
 
     thread perform();

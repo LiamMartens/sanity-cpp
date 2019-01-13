@@ -30,10 +30,10 @@ set(
     sanity_mutations.cpp
 )
 
-# add library
+#  @add_library add library
 add_library(${SANITYCPP_TARGET_NAME} SHARED ${SANITYCPP_SOURCES})
 
-# link dependencies
+# @target_link_libraries link dependencies
 target_link_libraries(${SANITYCPP_TARGET_NAME} ${CURL_LIBRARIES})
 target_link_libraries(${SANITYCPP_TARGET_NAME} ${nlohmann_json_LIBRARIES})
 

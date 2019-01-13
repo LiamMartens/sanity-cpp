@@ -68,7 +68,7 @@ configure_file(
 
 # @install install headers
 install(
-    DIRECTORY include
+    DIRECTORY include/${SANITYCPP_TARGET_NAME}
     DESTINATION ${SANITYCPP_INCLUDE_INSTALL_DIR}
 )
 

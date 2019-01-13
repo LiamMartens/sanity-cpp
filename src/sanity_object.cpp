@@ -109,7 +109,7 @@ void SanityObject::SetCreatedAt(string createdAt) {
         .tm_hour = h,
         .tm_mday = d,
         .tm_mon = M - 1,
-        .tm_year = y
+        .tm_year = y - 1900
     };
 }
 

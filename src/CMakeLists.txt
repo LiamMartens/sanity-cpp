@@ -30,15 +30,23 @@ set(
     sanity_mutations.cpp
 )
 
-add_library(${PROJECT_NAME} SHARED ${SANITYCPP_SOURCES})
+# add library
+add_library(${SANITYCPP_TARGET_NAME} SHARED ${SANITYCPP_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ${CURL_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${nlohmann_json_LIBRARIES})
+# link dependencies
+target_link_libraries(${SANITYCPP_TARGET_NAME} ${CURL_LIBRARIES})
+target_link_libraries(${SANITYCPP_TARGET_NAME} ${nlohmann_json_LIBRARIES})
 
+# @install
 install(
-    TARGETS ${PROJECT_NAME}
-    LIBRARY
-    DESTINATION lib
-    ARCHIVE
-    DESTINATION lib
+    TARGETS ${SANITYCPP_TARGET_NAME}
+    EXPORT ${SANITYCPP_TARGETS_EXPORT_NAME}
+    INCLUDES DESTINATION ${SANITYCPP_INCLUDE_INSTALL_DIR}
+    LIBRARY DESTINATION ${SANITYCPP_LIB_INSTALL_DIR}
+)
+
+# @install
+install(
+    EXPORT ${SANITYCPP_TARGETS_EXPORT_NAME}
+    DESTINATION ${SANITYCPP_CONFIG_INSTALL_DIR}
 )

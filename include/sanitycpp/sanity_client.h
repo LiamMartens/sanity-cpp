@@ -66,8 +66,8 @@ public:
     void UseCdn(bool useCdn = true);
     #pragma endregion
 
-    SanityRequest* query(const SanityQuery& query);
-    SanityRequest* mutate(const SanityMutations& mut);
+    SanityRequest* query(const SanityQuery& query) const;
+    SanityRequest* mutate(const SanityMutations& mut) const;
 };
 
 #endif // SANITY_CLIENT_H

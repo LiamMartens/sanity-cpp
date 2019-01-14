@@ -94,7 +94,7 @@ void SanityClient::UseCdn(bool useCdn) {
  * @param const SanityQuery& query The query to execute
  * @return SanityRequest*
  */
-SanityRequest* SanityClient::query(const SanityQuery& query) {
+SanityRequest* SanityClient::query(const SanityQuery& query) const {
     string path = "data/query";
     SanityUrl url(this->m_use_cdn ? this->ApiCdnUrl(path) : this->ApiUrl(path));
     url.InsertQueryPart("query", query.build());
@@ -107,7 +107,7 @@ SanityRequest* SanityClient::query(const SanityQuery& query) {
  * @param const SanityMutation& mut
  * @return SanityRequest*
  */
-SanityRequest* SanityClient::mutate(const SanityMutations& mut) {
+SanityRequest* SanityClient::mutate(const SanityMutations& mut) const {
     string path = "data/mutate";
     SanityUrl url(this->m_use_cdn ? this->ApiCdnUrl(path) : this->ApiUrl(path));
     SanityRequest* req = new SanityRequest(url.build(), this->m_token);

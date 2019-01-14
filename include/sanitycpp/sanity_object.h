@@ -1,8 +1,10 @@
 #ifndef SANITY_OBJECT_H
 #define SANITY_OBJECT_H
 
+#include <nlohmann/json.hpp>
 #include <string>
 
+using json = nlohmann::json;
 using namespace std;
 
 class SanityObject {
@@ -20,6 +22,7 @@ private:
 
 public:
     SanityObject();
+    SanityObject(json from);
 
     #pragma region getters
     string Id() const;

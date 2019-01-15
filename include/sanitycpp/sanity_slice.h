@@ -2,11 +2,11 @@
 #define SANITY_SLICE_H
 
 #include <string>
-#include "sanity_part_builder.h"
+#include "sanity_modifier.h"
 
 using namespace std;
 
-class SanitySlice : public SanityPartBuilder {
+class SanitySlice : public SanityModifier {
 private:
     int m_from = 0;
     int m_to = -1;

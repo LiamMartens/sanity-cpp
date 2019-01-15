@@ -32,7 +32,8 @@ enum class SanityPartBuilderType {
     PATCH_INSERT,
     PATCH_MATH,
     PATCH_DIFFMATCH,
-    MUTATIONS
+    MUTATIONS,
+    MODIFIERS,
 };
 
 class SanityPartBuilder {

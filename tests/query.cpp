@@ -4,6 +4,8 @@
 #include "sanity_defined_filter.h"
 #include "sanity_defined_filter.h"
 #include "sanity_string.h"
+#include "sanity_modifiers.h"
+#include "sanity_order.h"
 #include "Catch2/single_include/catch2/catch.hpp"
 
 TEST_CASE("Test query") {
@@ -19,6 +21,11 @@ TEST_CASE("Test query") {
     );
     query.SetFilter(filter);
 
+    SanityModifiers modifiers;
+    SanityOrder order("_createdAt", true);
+    modifiers.AddModifier(order);
+    query.SetModifiers(modifiers);
+
     SanityObjectProjection proj;
     proj.AddProperty(
         SanityObjectProjectionProperty("title")
@@ -32,11 +39,11 @@ TEST_CASE("Test query") {
         SanityQuery query_copy = query;
 
         REQUIRE(
-            query.build() == "*[param1 == param2 && defined(param3)]{title,description}"
+            query.build() == "*[param1 == param2 && defined(param3)]|order(_createdAt asc){title,description}"
         );
 
         REQUIRE(
-            query_copy.build() == "*[param1 == param2 && defined(param3)]{title,description}"
+            query_copy.build() == "*[param1 == param2 && defined(param3)]|order(_createdAt asc){title,description}"
         );
     }
 
@@ -44,11 +51,11 @@ TEST_CASE("Test query") {
         SanityQuery* query_clone = (SanityQuery*)query.clone();
 
         REQUIRE(
-            query.build() == "*[param1 == param2 && defined(param3)]{title,description}"
+            query.build() == "*[param1 == param2 && defined(param3)]|order(_createdAt asc){title,description}"
         );
 
         REQUIRE(
-            query_clone->build() == "*[param1 == param2 && defined(param3)]{title,description}"
+            query_clone->build() == "*[param1 == param2 && defined(param3)]|order(_createdAt asc){title,description}"
         );
 
         delete query_clone;
@@ -56,7 +63,7 @@ TEST_CASE("Test query") {
 
     SECTION("Test query build") {
         REQUIRE(
-            query.build() == "*[param1 == param2 && defined(param3)]{title,description}"
+            query.build() == "*[param1 == param2 && defined(param3)]|order(_createdAt asc){title,description}"
         );
     }
 
@@ -82,7 +89,7 @@ TEST_CASE("Test query") {
         query.SetProjection(proj);
 
         REQUIRE(
-            query.build() == "*[param1 == param2 && defined(param3)]{title,description,\"relatedMovies\":*[_type == \"movie\" && defined(^._id)]}}"
+            query.build() == "*[param1 == param2 && defined(param3)]|order(_createdAt asc){title,description,\"relatedMovies\":*[_type == \"movie\" && defined(^._id)]}}"
         );
     }
 }

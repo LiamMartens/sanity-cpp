@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "sanity_part_builder.h"
+#include "sanity_modifier.h"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ struct SanityOrderPart {
     bool asc;
 };
 
-class SanityOrder : public SanityPartBuilder {
+class SanityOrder : public SanityModifier {
 private:
     vector<SanityOrderPart> m_parts;
 public:

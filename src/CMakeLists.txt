@@ -29,6 +29,7 @@ set(
     sanity_patch_math_mutation.cpp
     sanity_patch_diffmatch_mutation.cpp
     sanity_mutations.cpp
+    sanity_modifiers.cpp
 )
 
 #  @add_library add library

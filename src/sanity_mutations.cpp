@@ -4,6 +4,14 @@ SanityMutations::SanityMutations() {
     this->m_type = SanityPartBuilderType::MUTATIONS;
 }
 
+SanityMutations::~SanityMutations() {
+    while(!this->m_mutations.empty()) {
+        SanityMutation* mut = this->m_mutations.back();
+        delete mut;
+        this->m_mutations.pop_back();
+    }
+}
+
 /**
  * Adds a mutation to the list
  * @param const SanityMutation& mut

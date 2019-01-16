@@ -7,7 +7,7 @@ SanityCreate::SanityCreate(bool replace) {
 }
 
 SanityCreate::SanityCreate(json object, bool replace)
-    : SanityCreate() {
+    : SanityCreate(replace) {
     this->m_object = object;
 }
 #pragma endregion

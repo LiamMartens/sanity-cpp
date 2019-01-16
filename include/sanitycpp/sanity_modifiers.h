@@ -15,6 +15,7 @@ private:
 
 public:
     SanityModifiers();
+    ~SanityModifiers();
 
     void AddModifier(const SanityModifier& mod);
 

@@ -1,5 +1,6 @@
 #include "sanity_delete.h"
 
+#pragma region constructors
 SanityDelete::SanityDelete() {
     this->m_type = SanityPartBuilderType::DELETE;
 }
@@ -13,6 +14,13 @@ SanityDelete::SanityDelete(const SanityQuery& query)
     : SanityDelete() {
     this->m_query = (SanityQuery*)query.clone();
 }
+
+SanityDelete::~SanityDelete() {
+    if(this->m_query != nullptr) {
+        delete this->m_query;
+    }
+}
+#pragma endregion
 
 /**
  * Returns complete mutation object

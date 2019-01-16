@@ -14,6 +14,18 @@ SanityPatch::SanityPatch(const SanityQuery& query)
     : SanityPatch() {
     this->m_query = (SanityQuery*)query.clone();
 }
+
+SanityPatch::~SanityPatch() {
+    if(this->m_query != nullptr) {
+        delete this->m_query;
+    }
+
+    while(!this->m_patches.empty()) {
+        SanityPatchMutation* mut = this->m_patches.back();
+        delete mut;
+        this->m_patches.pop_back();
+    }
+}
 #pragma endregion
 
 /**

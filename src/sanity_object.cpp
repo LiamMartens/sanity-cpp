@@ -9,6 +9,10 @@ SanityObject::SanityObject(json from) {
         this->SetId(from["_id"].get<string>());
     }
 
+    if(from.find("_type") != end) {
+        this->SetType(from["_type"].get<string>());
+    }
+
     if(from.find("_rev") != end) {
         this->SetRevision(from["_rev"].get<string>());
     }
@@ -61,6 +65,19 @@ tm SanityObject::UpdatedAt() const {
  */
 tm SanityObject::CreatedAt() const {
     return this->m_created;
+}
+
+/**
+ * @brief The object to use when saving
+ * 
+ * @return json 
+ */
+json SanityObject::SaveObject() const {
+    json o = {
+        {"_id", this->m_id},
+        {"_type", this->m_type}
+    };
+    return o;
 }
 #pragma endregion
 
@@ -139,5 +156,76 @@ void SanityObject::SetCreatedAt(string createdAt) {
  */
 void SanityObject::SetCreatedAt(tm createdAt) {
     this->m_created = createdAt;
+}
+#pragma endregion
+
+#pragma region mutations
+/**
+ * @brief Deletes the object in Sanity
+ * 
+ * @return true 
+ * @return false 
+ */
+bool SanityObject::Delete(const SanityClient& client) {
+    if(!this->m_id.empty()) {
+        SanityMutations mutations;
+        SanityDelete del(this->m_id);
+        mutations.AddMutation(del);
+        SanityRequest* req = client.mutate(mutations);
+        thread t = req->perform();
+        t.join();
+        json resp = req->Response().ParsedBody;
+        delete req;
+
+        if(resp.find("results") == resp.end()) {
+            return false;
+        }
+
+        json results = resp["results"].get<json>();
+        if(results.empty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    throw SanityObject_NoIdException();
+}
+
+/**
+ * @brief Saves the object params (requires ID)
+ * 
+ * @param client 
+ * @return true 
+ * @return false 
+ */
+bool SanityObject::Save(const SanityClient& client) {
+    json object = this->SaveObject();
+    SanityMutations mutations;
+    // try to create if not exists yet
+    SanityCreate create(object, false);
+    mutations.AddMutation(create);
+    // try to update
+    SanityPatch patches(this->Id());
+    SanityPatchSetMutation set_patch(object);
+    patches.AddPatch(set_patch);
+    mutations.AddMutation(patches);
+    // perform request
+    SanityRequest* request = client.mutate(mutations);
+    thread t = request->perform();
+    t.join();
+    json resp = request->Response().ParsedBody;
+    delete request;
+
+    if(resp.find("results") == resp.end()) {
+        return false;
+    }
+
+    json results = resp["results"].get<json>();
+    if(results.empty()) {
+        return false;
+    }
+
+    return true;
 }
 #pragma endregion

@@ -5,16 +5,6 @@ SanityQuery::SanityQuery() {
     this->m_type = SanityPartBuilderType::QUERY;
 }
 
-SanityQuery::~SanityQuery() {
-    if(this->m_filter != nullptr) {
-        delete this->m_filter;
-    }
-
-    if(this->m_projection != nullptr) {
-        delete this->m_projection;
-    }
-}
-
 SanityQuery::SanityQuery(const SanityQuery& query) {
     if(query.m_filter != nullptr) {
         this->SetFilter(*query.m_filter);
@@ -26,6 +16,16 @@ SanityQuery::SanityQuery(const SanityQuery& query) {
 
     if(query.m_projection != nullptr) {
         this->SetProjection(*query.m_projection);
+    }
+}
+
+SanityQuery::~SanityQuery() {
+    if(this->m_filter != nullptr) {
+        delete this->m_filter;
+    }
+
+    if(this->m_projection != nullptr) {
+        delete this->m_projection;
     }
 }
 #pragma endregion

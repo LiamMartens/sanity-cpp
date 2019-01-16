@@ -27,6 +27,7 @@ public:
     #pragma region constructors
     SanityPatch(string id);
     SanityPatch(const SanityQuery& query);
+    ~SanityPatch();
     #pragma endregion
 
     void SetRevisionId(string id);

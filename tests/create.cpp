@@ -13,7 +13,7 @@ TEST_CASE("Test create mutation") {
         };
         SanityCreate create(obj, false);
         REQUIRE(
-            create.build() == "{\"createOrReplace\":{\"id\":1,\"name\":{\"firstName\":\"Liam\",\"lastName\":\"Martens\"}}}"
+            create.build() == "{\"createIfNotExists\":{\"id\":1,\"name\":{\"firstName\":\"Liam\",\"lastName\":\"Martens\"}}}"
         );
     }
 }

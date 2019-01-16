@@ -20,8 +20,11 @@ private:
 
     SanityDelete();
 public:
+    #pragma region constructors
     SanityDelete(string id);
     SanityDelete(const SanityQuery& query);
+    ~SanityDelete();
+    #pragma endregion
 
     json MutationObject() const override;
     SanityPartBuilder* clone() const override;

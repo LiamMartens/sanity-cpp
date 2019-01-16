@@ -240,6 +240,7 @@ thread SanityRequest::perform() {
     }
 
     if(this->m_data != "") {
+        printf("data: %s\n", this->m_data.c_str());
         curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->m_data.c_str());
     }
 

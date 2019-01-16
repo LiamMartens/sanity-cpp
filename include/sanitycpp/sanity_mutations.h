@@ -15,6 +15,7 @@ private:
     vector<SanityMutation*> m_mutations;
 public:
     SanityMutations();
+    ~SanityMutations();
 
     void AddMutation(const SanityMutation& mut);
 

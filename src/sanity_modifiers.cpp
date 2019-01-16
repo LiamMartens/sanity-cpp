@@ -4,6 +4,14 @@ SanityModifiers::SanityModifiers() {
     this->m_type = SanityPartBuilderType::MODIFIERS;
 }
 
+SanityModifiers::~SanityModifiers() {
+    while(!this->m_modifiers.empty()) {
+        SanityModifier* mod = this->m_modifiers.back();
+        delete mod;
+        this->m_modifiers.pop_back();
+    }
+}
+
 /**
  * Adds a modifier to the list
  * @param const SanityModifier& mod

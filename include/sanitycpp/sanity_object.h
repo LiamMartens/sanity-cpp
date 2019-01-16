@@ -7,6 +7,10 @@
 #include "sanity_client.h"
 #include "sanity_modifiers.h"
 #include "sanity_slice.h"
+#include "sanity_delete.h"
+#include "sanity_patch.h"
+#include "sanity_patch_set_mutation.h"
+#include "sanity_mutations.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -15,6 +19,13 @@ class SanityObject_NoResultException
     : public exception {
     const char* what() const throw() {
         return "No result";
+    }
+};
+
+class SanityObject_NoIdException
+    : public exception {
+    const char* what() const throw() {
+        return "No ID";
     }
 };
 
@@ -104,6 +115,7 @@ public:
     string Type() const;
     tm UpdatedAt() const;
     tm CreatedAt() const;
+    virtual json SaveObject() const;
     #pragma endregion
 
     #pragma region setters
@@ -114,6 +126,11 @@ public:
     void SetUpdatedAt(tm updatedAt);
     void SetCreatedAt(string createdAt);
     void SetCreatedAt(tm createdAt);
+    #pragma endregion
+
+    #pragma region mutations
+    bool Delete(const SanityClient& client);
+    bool Save(const SanityClient& client);
     #pragma endregion
 };
 

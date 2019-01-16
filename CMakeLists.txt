@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 # @project
-project(sanitycpp VERSION 1.1.0)
+project(sanitycpp VERSION 1.1.1)
 
 # @option add options
 option(BUILD_TESTS "Build tests" ON)

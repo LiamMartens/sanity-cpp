@@ -45,7 +45,7 @@ public:
         thread t = request->perform();
         t.join();
 
-        vector<SanityObject> objects_vec;
+        vector<T> objects_vec;
         json response = request->Response().ParsedBody;
         if(response.find("result") != response.end()) {
             json results = response["result"].get<json>();
@@ -90,8 +90,7 @@ public:
         if(result.is_null()) {
             throw SanityObject_NoResultException();
         }
-        SanityObject resp = T(result.get<json>());
-
+        T resp = T(result.get<json>());
         return resp;
     };
     #pragma endregion

@@ -1,16 +1,23 @@
 #include "sanity_object.h"
 
-SanityObject::SanityObject() {}
+SanityObject::SanityObject(string override_type) {
+    this->m_type = override_type;
+}
 
-SanityObject::SanityObject(json from) {
+SanityObject::SanityObject(json from, string override_type)
+    : SanityObject(override_type) {
     json::iterator end = from.end();
 
     if(from.find("_id") != end) {
         this->SetId(from["_id"].get<string>());
     }
 
-    if(from.find("_type") != end) {
+    string derivedType = this->Type();
+    bool derivedTypeIsEmpty = derivedType.empty();
+    if(derivedTypeIsEmpty && from.find("_type") != end) {
         this->SetType(from["_type"].get<string>());
+    } else if(!derivedTypeIsEmpty) {
+        this->SetType(derivedType);
     }
 
     if(from.find("_rev") != end) {

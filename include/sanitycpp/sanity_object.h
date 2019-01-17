@@ -106,8 +106,8 @@ public:
     };
     #pragma endregion
 
-    SanityObject();
-    SanityObject(json from);
+    SanityObject(string override_type = "");
+    SanityObject(json from, string override_type = "");
 
     #pragma region getters
     string Id() const;

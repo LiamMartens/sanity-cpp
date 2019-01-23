@@ -2,6 +2,7 @@
 set(
     SANITYCPP_SOURCES
     sanity_object.cpp
+    sanity_reference.cpp
     sanity_url.cpp
     sanity_string.cpp
     sanity_path.cpp

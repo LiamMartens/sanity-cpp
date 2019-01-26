@@ -53,7 +53,8 @@
         "utility": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "map": "cpp"
     },
     "cmake.configureOnOpen": true,
     "C_Cpp.configurationWarnings": "Disabled"

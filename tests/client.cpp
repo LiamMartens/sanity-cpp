@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "sanity_client.h"
 #include "sanity_query.h"
 #include "sanity_filter.h"
@@ -8,6 +9,6 @@
 
 TEST_CASE("Test client") {
     SECTION("Perform request") {
-        SanityClient client("wfdilxeh", "production", "");
+        SanityClient client("tvkzbtk7", "production", "");
     }
 }

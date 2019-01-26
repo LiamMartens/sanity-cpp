@@ -81,14 +81,36 @@ tm SanityObject::CreatedAt() const {
  */
 json SanityObject::SaveObject() const {
     json o = {
-        {"_id", this->m_id},
-        {"_type", this->m_type}
+        {"_id", this->Id()},
+        {"_type", this->Type()},
+        {"_rev", this->Revision()}
     };
     return o;
 }
 #pragma endregion
 
 #pragma region setters
+/**
+ * @brief Updates the objects data using a JSON object
+ * 
+ * @param from
+ */
+void SanityObject::Update(json from) {
+    json::iterator end = from.end();
+
+    if(from.find("_rev") != end) {
+        this->SetRevision(from["_rev"].get<string>());
+    }
+
+    if(from.find("_updatedAt") != end) {
+        this->SetUpdatedAt(from["_updatedAt"].get<string>());
+    }
+
+    if(from.find("_createdAt") != end) {
+        this->SetCreatedAt(from["_createdAt"].get<string>());
+    }
+}
+
 /**
  * Sets the object id
  * @param string id
@@ -168,6 +190,125 @@ void SanityObject::SetCreatedAt(tm createdAt) {
 
 #pragma region mutations
 /**
+ * @brief Finds reference data
+ * 
+ * @param client
+ * @param key
+ * @param is_array
+ * @return true
+ * @return false
+ */
+bool SanityObject::Join(const SanityClient& client, string key, bool is_array) {
+    string id = this->Id();
+    string type = this->Type();
+
+    if(!id.empty() && !type.empty()) {
+        SanityQuery query;
+        // build and set filter
+        SanityFilter filter;
+        SanityEqualityFilter eqf_id("_id", SanityEqualityFilterCondition::EQ, SanityString::QuoteWrap(id));
+        SanityEqualityFilter eqf_type("_type", SanityEqualityFilterCondition::EQ, SanityString::QuoteWrap(type));
+        filter.AddPart(eqf_id);
+        filter.AddPart(eqf_type, SanityFilterOperator::AND);
+        query.SetFilter(filter);
+        // build and set projection -> include joined key only
+        SanityObjectProjection projection;
+        SanityPath proj_path;
+        if(is_array) {
+            proj_path.AddArrayPart(key);
+        } else {
+            proj_path.AddPart(key);
+        }
+        SanityObjectProjection prop_subproj;
+        SanityObjectProjectionProperty prop_subproj_restprop("...");
+        prop_subproj.AddProperty(prop_subproj_restprop);
+        proj_path.AddProjectionPart(prop_subproj);
+        SanityObjectProjectionProperty prop_joined;
+        prop_joined.SetValue(proj_path);
+        prop_joined.SetRename(key);
+        projection.AddProperty(prop_joined);
+        query.SetProjection(projection);
+
+        // perform  request
+        SanityRequest* req = client.query(query);
+        thread t = req->perform();
+        t.join();
+        json response = req->Response().ParsedBody;
+        delete req;
+        // check for results
+        bool has_result = (response.find("result") != response.end());
+        bool has_results = (response.find("results") != response.end());
+        if(!has_result && !has_results) return false;
+        map<json, bool> one_of_results = {
+            {response["result"].get<json>(), has_result},
+            {response["results"].get<json>(), has_results}
+        };
+        json results = SanityHelpers::OneOf<json>(one_of_results);
+        if(results.empty()) return false;
+        // update
+        this->Update(results[0].get<json>());
+        return true;
+    } else if(id.empty()) {
+        throw SanityObject_NoIdException();
+    } else if(type.empty()) {
+        throw SanityObject_NoTypeException();
+    }
+
+    return false;
+}
+
+/**
+ * @brief Refreshes the object data
+ *
+ * @param client
+ * @return true
+ * @return false
+ */
+bool SanityObject::Refresh(const SanityClient& client) {
+    string id = this->Id();
+    string type = this->Type();
+
+    if(!id.empty() && !type.empty()) {
+        SanityQuery query;
+        SanityFilter filter;
+        SanityEqualityFilter eqf_id("_id", SanityEqualityFilterCondition::EQ, SanityString::QuoteWrap(id));
+        SanityEqualityFilter eqf_type("_type", SanityEqualityFilterCondition::EQ, SanityString::QuoteWrap(type));
+        filter.AddPart(eqf_id);
+        filter.AddPart(eqf_type, SanityFilterOperator::AND);
+        query.SetFilter(filter);
+
+        // perform request
+        SanityRequest* req = client.query(query);
+        thread t = req->perform();
+        t.join();
+        json response = req->Response().ParsedBody;
+        delete req;
+
+        // check if anything was found
+        bool has_result = (response.find("result") != response.end());
+        bool has_results = (response.find("results") != response.end());
+        if(!has_result && !has_results) return false;
+        map<json, bool> one_of_results = {
+            {response["result"].get<json>(), has_result},
+            {response["results"].get<json>(), has_results}
+        };
+        json results = SanityHelpers::OneOf<json>(one_of_results);
+        if(results.empty()) return false;
+
+        // update object
+        this->Update(results[0].get<json>());
+
+        return true;
+    } else if(id.empty()) {
+        throw SanityObject_NoIdException();
+    } else if(type.empty()) {
+        throw SanityObject_NoTypeException();
+    }
+
+    return false;
+}
+
+/**
  * @brief Deletes the object in Sanity
  * 
  * @return true 
@@ -184,11 +325,14 @@ bool SanityObject::Delete(const SanityClient& client) {
         json resp = req->Response().ParsedBody;
         delete req;
 
-        if(resp.find("results") == resp.end()) {
-            return false;
-        }
-
-        json results = resp["results"].get<json>();
+        bool has_result = (resp.find("result") != resp.end());
+        bool has_results = (resp.find("results") != resp.end());
+        if(!has_result && !has_results) return false;
+        map<json, bool> one_of_results = {
+            {resp["result"].get<json>(), has_result},
+            {resp["results"].get<json>(), has_results}
+        };
+        json results = SanityHelpers::OneOf<json>(one_of_results);
         if(results.empty()) {
             return false;
         }
@@ -224,11 +368,15 @@ bool SanityObject::Save(const SanityClient& client) {
     json resp = request->Response().ParsedBody;
     delete request;
 
-    if(resp.find("results") == resp.end()) {
-        return false;
-    }
+    bool has_result = (resp.find("result") != resp.end());
+    bool has_results = (resp.find("results") != resp.end());
+    if(!has_result && !has_results) return false;
+    map<json, bool> one_of_results = {
+        {resp["result"].get<json>(), has_result},
+        {resp["results"].get<json>(), has_results}
+    };
+    json results = SanityHelpers::OneOf<json>(one_of_results);
 
-    json results = resp["results"].get<json>();
     if(results.empty()) {
         return false;
     }

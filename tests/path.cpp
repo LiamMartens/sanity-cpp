@@ -67,5 +67,8 @@ TEST_CASE("Test path builder") {
         proj.AddProperty(SanityObjectProjectionProperty("title"));
         proj.AddProperty(SanityObjectProjectionProperty("url"));
         p.AddProjectionPart(proj);
+        REQUIRE(
+            p.build() == "poster.asset->{title,url}"
+        );
     }
 }

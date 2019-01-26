@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <nlohmann/json.hpp>
 #include "sanity_client.h"
 #include "sanity_modifiers.h"
@@ -11,6 +12,10 @@
 #include "sanity_patch.h"
 #include "sanity_patch_set_mutation.h"
 #include "sanity_mutations.h"
+#include "sanity_path.h"
+#include "sanity_equality_filter.h"
+#include "sanity_object_projection.h"
+#include "sanity_helpers.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -26,6 +31,13 @@ class SanityObject_NoIdException
     : public exception {
     const char* what() const throw() {
         return "No ID";
+    }
+};
+
+class SanityObject_NoTypeException
+    : public exception {
+    const char* what() const throw() {
+        return "No type";
     }
 };
 
@@ -119,6 +131,7 @@ public:
     #pragma endregion
 
     #pragma region setters
+    virtual void Update(json from);
     void SetId(string id);
     void SetRevision(string rev);
     void SetType(string type);
@@ -128,7 +141,9 @@ public:
     void SetCreatedAt(tm createdAt);
     #pragma endregion
 
-    #pragma region mutations
+    #pragma region queries
+    bool Join(const SanityClient& client, string key, bool is_array = false);
+    bool Refresh(const SanityClient& client);
     bool Delete(const SanityClient& client);
     bool Save(const SanityClient& client);
     #pragma endregion

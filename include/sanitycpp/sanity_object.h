@@ -54,9 +54,9 @@ private:
     /** @var The type of the objet */
     string m_type;
     /** @var Updated at datetime */
-    tm m_updated;
+    tm m_updated = { 0, 0, 1, 0, 0, 0 };
     /** @var Created at datetime */
-    tm m_created;
+    tm m_created = { 0, 0, 1, 0, 0, 0 };
 
 public:
     #pragma region templated

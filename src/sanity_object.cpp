@@ -347,6 +347,15 @@ bool SanityObject::Delete(const SanityClient& client) {
  */
 bool SanityObject::Save(const SanityClient& client) {
     json object = this->SaveObject();
+
+    if(this->Id().empty()) {
+        throw SanityObject_NoIdException();
+    }
+
+    if(this->Type().empty()) {
+        throw SanityObject_NoTypeException();
+    }
+
     SanityMutations mutations;
     // try to create if not exists yet
     SanityCreate create(object, false);

@@ -75,3 +75,31 @@ string SanityString::Join(vector<string> items, string delim) {
     }
     return joined;
 }
+
+/**
+ * @brief Pads a string to a certain length with a character
+ *
+ * @param from
+ * @param len
+ * @param c
+ * @return string
+ */
+string SanityString::PadStartToLength(string from, unsigned int len, char c) {
+    string n = string(from);
+    n.insert(n.begin(), len - n.length(), c);
+    return n;
+}
+
+/**
+ * @brief Pads a sring to a certain length with a character
+ *
+ * @param from
+ * @param len
+ * @param c
+ * @return string
+ */
+string SanityString::PadEndToLength(string from, unsigned int len, char c) {
+    string n = from;
+    n.append(len - n.length(), c);
+    return n;
+}

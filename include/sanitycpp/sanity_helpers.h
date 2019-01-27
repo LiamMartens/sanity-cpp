@@ -2,6 +2,7 @@
 #define SANITY_HELPERS_H
 
 #include <map>
+#include "sanity_string.h"
 using namespace std;
 
 class SanityHelpers_OneOf_NoneFound
@@ -33,6 +34,20 @@ public:
         }
 
         return def;
+    };
+
+    static string TmToString(tm t) {
+        string year = to_string(t.tm_year + 1900);
+        string mon = SanityString::PadStartToLength(to_string(t.tm_mon + 1), 2, '0');
+        string day = SanityString::PadStartToLength(to_string(t.tm_mday), 2, '0');
+
+        string hours = SanityString::PadStartToLength(to_string(t.tm_hour), 2, '0');
+        string mins = SanityString::PadStartToLength(to_string(t.tm_min), 2, '0');
+        string secs = SanityString::PadStartToLength(to_string(t.tm_sec), 2, '0');
+
+        return
+            year + "-" + mon + "-" + day
+            + "T" + hours + ":" + mins + ":" + secs + "Z";
     };
 };
 

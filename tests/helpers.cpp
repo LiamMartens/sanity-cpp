@@ -19,4 +19,18 @@ TEST_CASE("Test helpers") {
             SanityHelpers::OneOf<string>(oneOf, "c") == "c"
         );
     }
+
+    SECTION("Test tm to string") {
+        tm t;
+        t.tm_year = 2019 - 1900;
+        t.tm_mon = 1 - 1;
+        t.tm_mday = 1;
+        t.tm_hour = 10;
+        t.tm_min = 0;
+        t.tm_sec = 0;
+
+        REQUIRE(
+            SanityHelpers::TmToString(t) == "2019-01-01T10:00:00Z"
+        );
+    }
 }

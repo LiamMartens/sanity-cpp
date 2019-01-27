@@ -385,6 +385,19 @@ bool SanityObject::Save(const SanityClient& client) {
 }
 #pragma endregion
 
+#pragma region
+/**
+ * @brief Creates a json object
+ * 
+ * @return json
+ */
+json SanityObject::toJson() const {
+    json o = this->SaveObject();
+    o["_updatedAt"] = SanityHelpers::TmToString(this->UpdatedAt());
+    o["_createdAt"] = SanityHelpers::TmToString(this->CreatedAt());
+    return o;
+}
+
 /**
  * @brief Clones the object
  * 
@@ -396,3 +409,4 @@ SanityObject* SanityObject::clone() const {
     cloned->SetCreatedAt(this->CreatedAt());
     return cloned;
 }
+#pragma endregion

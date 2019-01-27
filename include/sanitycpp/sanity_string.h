@@ -14,6 +14,8 @@ public:
     static string Join(vector<SanityPartBuilder*> items, string delim = ",");
     static string Join(vector<SanityPartBuilder> items, string delim = ",");
     static string Join(vector<string> items, string delim = ",");
+    static string PadStartToLength(string from, unsigned int len, char c);
+    static string PadEndToLength(string from, unsigned int len, char c);
 };
 
 #endif // SANITY_STRING_H

@@ -17,6 +17,7 @@
 #include "sanity_object_projection.h"
 #include "sanity_helpers.h"
 #include "isanity_cloneable.h"
+#include "isanity_jsonserializable.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -42,7 +43,9 @@ class SanityObject_NoTypeException
     }
 };
 
-class SanityObject : public ISanityCloneable {
+class SanityObject :
+    public ISanityCloneable,
+    public ISanityJsonSerializable {
 private:
     /** @var The id of the object */
     string m_id;
@@ -149,7 +152,10 @@ public:
     bool Save(const SanityClient& client);
     #pragma endregion
 
+    #pragma region overrides
+    virtual json toJson() const override;
     virtual SanityObject* clone() const override;
+    #pragma endregion
 };
 
 #endif // SANITY_OBJECT_H

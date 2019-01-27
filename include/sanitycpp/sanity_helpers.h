@@ -36,7 +36,7 @@ public:
         return def;
     };
 
-    static string TmToString(tm t, bool include_time = false) {
+    static string TmToString(tm t, bool include_time = true) {
         string year = to_string(t.tm_year + 1900);
         string mon = SanityString::PadStartToLength(to_string(t.tm_mon + 1), 2, '0');
         string day = SanityString::PadStartToLength(to_string(t.tm_mday), 2, '0');

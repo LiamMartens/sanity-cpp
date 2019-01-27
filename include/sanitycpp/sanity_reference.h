@@ -29,6 +29,12 @@ public:
     void SetRef(string ref);
     void SetKey(string key);
     #pragma endregion
+
+    #pragma region overrides
+    void Update(json from) override;
+    json toJson() const override;
+    SanityObject* clone() const override;
+    #pragma endregion
 };
 
 #endif // SANITY_REFERENCE_H

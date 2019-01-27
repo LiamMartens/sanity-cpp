@@ -5,15 +5,7 @@ SanityReference::SanityReference() {
 }
 
 SanityReference::SanityReference(json from) : SanityObject(from) {
-    json::iterator end = from.end();
-
-    if(from.find("_key") != end) {
-        this->SetKey(from["_key"].get<string>());
-    }
-
-    if(from.find("_ref") != end) {
-        this->SetRef(from["_ref"].get<string>());
-    }
+    this->Update(from);
 }
 
 #pragma region getters
@@ -69,4 +61,45 @@ void SanityReference::SetKey(string key) {
 }
 #pragma endregion
 
+#pragma region overrides
+/**
+ * @brief Updates the object from json
+ * 
+ * @param from
+ */
+void SanityReference::Update(json from) {
+    json::iterator end = from.end();
 
+    if(from.find("_key") != end) {
+        this->SetKey(from["_key"].get<string>());
+    }
+
+    if(from.find("_ref") != end) {
+        this->SetRef(from["_ref"].get<string>());
+    }
+}
+
+/**
+ * @brief Converts the ref to json
+ * 
+ * @return json
+ */
+json SanityReference::toJson() const {
+    json o = SanityObject::toJson();
+    o["_ref"] = this->Ref();
+    if(!this->Key().empty()) {
+        o["_key"] = this->Key();
+    }
+    return o;
+}
+
+/**
+ * @brief Creates a clone of the object
+ * 
+ * @return SanityObject*
+ */
+SanityObject* SanityReference::clone() const {
+    SanityReference* ref = new SanityReference(this->toJson());
+    return ref;
+}
+#pragma endregion

@@ -128,7 +128,7 @@ public:
     #pragma region getters
     string Id() const;
     string Revision() const;
-    string Type() const;
+    virtual string Type() const;
     tm UpdatedAt() const;
     tm CreatedAt() const;
     virtual json SaveObject() const;

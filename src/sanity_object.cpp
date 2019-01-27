@@ -70,11 +70,16 @@ tm SanityObject::CreatedAt() const {
  * @return json 
  */
 json SanityObject::SaveObject() const {
-    json o = {
-        {"_id", this->Id()},
-        {"_type", this->Type()},
-        {"_rev", this->Revision()}
-    };
+    json o;
+    if(!this->Id().empty()) {
+        o["_id"] = this->Id();
+    }
+    if(!this->Type().empty()) {
+        o["_type"] = this->Type();
+    }
+    if(!this->Revision().empty()) {
+        o["_rev"] = this->Revision();
+    }
     return o;
 }
 #pragma endregion

@@ -393,8 +393,17 @@ bool SanityObject::Save(const SanityClient& client) {
  */
 json SanityObject::toJson() const {
     json o = this->SaveObject();
-    o["_updatedAt"] = SanityHelpers::TmToString(this->UpdatedAt());
-    o["_createdAt"] = SanityHelpers::TmToString(this->CreatedAt());
+
+    tm updated_at = this->UpdatedAt();
+    if(SanityHelpers::IsValidTm(updated_at)) {
+        o["_updatedAt"] = SanityHelpers::TmToString(updated_at);
+    }
+
+    tm created_at = this->CreatedAt();
+    if(SanityHelpers::IsValidTm(created_at)) {
+        o["_createdAt"] = SanityHelpers::TmToString(created_at);
+    }
+
     return o;
 }
 
@@ -405,8 +414,17 @@ json SanityObject::toJson() const {
  */
 SanityObject* SanityObject::clone() const {
     SanityObject* cloned = new SanityObject(this->SaveObject());
-    cloned->SetUpdatedAt(this->UpdatedAt());
-    cloned->SetCreatedAt(this->CreatedAt());
+
+    tm updated_at = this->UpdatedAt();
+    if(SanityHelpers::IsValidTm(updated_at)) {
+        cloned->SetUpdatedAt(updated_at);
+    }
+
+    tm created_at = this->CreatedAt();
+    if(SanityHelpers::IsValidTm(created_at)) {
+        cloned->SetCreatedAt(created_at);
+    }
+
     return cloned;
 }
 #pragma endregion

@@ -53,6 +53,33 @@ public:
 
         return year + "-" + mon + "-" + day;
     };
+
+    /**
+     * @brief Checks whether the tm is valid
+     *
+     * @param t
+     * @return true
+     * @return false
+     */
+    static bool IsValidTm(tm t) {
+        if(
+            t.tm_year < -1900
+            || t.tm_mon < 0
+            || t.tm_mon > 11
+            || t.tm_mday < 1
+            || t.tm_mday > 31
+            || t.tm_hour < 0
+            || t.tm_hour > 23
+            || t.tm_min < 0
+            || t.tm_min > 59
+            || t.tm_sec < 0
+            || t.tm_sec > 60
+        ) {
+            return false;
+        }
+
+        return true;
+    };
 };
 
 #endif // SANITY_HELPERS_H

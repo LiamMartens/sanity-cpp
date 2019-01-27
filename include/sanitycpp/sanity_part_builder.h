@@ -2,7 +2,7 @@
 #define SANITY_BUILDER_H
 
 #include <string>
-
+#include "isanity_cloneable.h"
 using namespace std;
 
 enum class SanityPartBuilderType {
@@ -36,12 +36,12 @@ enum class SanityPartBuilderType {
     MODIFIERS,
 };
 
-class SanityPartBuilder {
+class SanityPartBuilder : public ISanityCloneable {
 protected:
     SanityPartBuilderType m_type;
 public:
     virtual string build() const { return ""; }
-    virtual SanityPartBuilder* clone() const { return new SanityPartBuilder(*this); }
+    virtual SanityPartBuilder* clone() const override { return new SanityPartBuilder(*this); }
     SanityPartBuilderType Type() { return this->m_type; }
 };
 

@@ -16,6 +16,7 @@
 #include "sanity_equality_filter.h"
 #include "sanity_object_projection.h"
 #include "sanity_helpers.h"
+#include "isanity_cloneable.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -41,7 +42,7 @@ class SanityObject_NoTypeException
     }
 };
 
-class SanityObject {
+class SanityObject : public ISanityCloneable {
 private:
     /** @var The id of the object */
     string m_id;
@@ -147,6 +148,8 @@ public:
     bool Delete(const SanityClient& client);
     bool Save(const SanityClient& client);
     #pragma endregion
+
+    virtual SanityObject* clone() const override;
 };
 
 #endif // SANITY_OBJECT_H

@@ -384,3 +384,15 @@ bool SanityObject::Save(const SanityClient& client) {
     return true;
 }
 #pragma endregion
+
+/**
+ * @brief Clones the object
+ * 
+ * @return SanityObject*
+ */
+SanityObject* SanityObject::clone() const {
+    SanityObject* cloned = new SanityObject(this->SaveObject());
+    cloned->SetUpdatedAt(this->UpdatedAt());
+    cloned->SetCreatedAt(this->CreatedAt());
+    return cloned;
+}

@@ -413,18 +413,7 @@ json SanityObject::toJson() const {
  * @return SanityObject*
  */
 SanityObject* SanityObject::clone() const {
-    SanityObject* cloned = new SanityObject(this->SaveObject());
-
-    tm updated_at = this->UpdatedAt();
-    if(SanityHelpers::IsValidTm(updated_at)) {
-        cloned->SetUpdatedAt(updated_at);
-    }
-
-    tm created_at = this->CreatedAt();
-    if(SanityHelpers::IsValidTm(created_at)) {
-        cloned->SetCreatedAt(created_at);
-    }
-
+    SanityObject* cloned = new SanityObject(this->toJson());
     return cloned;
 }
 #pragma endregion

@@ -20,17 +20,7 @@ SanityObject::SanityObject(json from, string override_type)
         this->SetType(derivedType);
     }
 
-    if(from.find("_rev") != end) {
-        this->SetRevision(from["_rev"].get<string>());
-    }
-
-    if(from.find("_updatedAt") != end) {
-        this->SetUpdatedAt(from["_updatedAt"].get<string>());
-    }
-
-    if(from.find("_createdAt") != end) {
-        this->SetCreatedAt(from["_createdAt"].get<string>());
-    }
+    this->Update(from);
 }
 
 #pragma region getters

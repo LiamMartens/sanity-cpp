@@ -86,27 +86,6 @@ json SanityObject::SaveObject() const {
 
 #pragma region setters
 /**
- * @brief Updates the objects data using a JSON object
- * 
- * @param from
- */
-void SanityObject::Update(json from) {
-    json::iterator end = from.end();
-
-    if(from.find("_rev") != end) {
-        this->SetRevision(from["_rev"].get<string>());
-    }
-
-    if(from.find("_updatedAt") != end) {
-        this->SetUpdatedAt(from["_updatedAt"].get<string>());
-    }
-
-    if(from.find("_createdAt") != end) {
-        this->SetCreatedAt(from["_createdAt"].get<string>());
-    }
-}
-
-/**
  * Sets the object id
  * @param string id
  */
@@ -390,6 +369,28 @@ bool SanityObject::Save(const SanityClient& client) {
 #pragma endregion
 
 #pragma region
+/**
+ * @brief Updates the objects data using a JSON object
+ * Does not update _id as this should only be updated explicitly
+ * 
+ * @param from
+ */
+void SanityObject::Update(json from) {
+    json::iterator end = from.end();
+
+    if(from.find("_rev") != end) {
+        this->SetRevision(from["_rev"].get<string>());
+    }
+
+    if(from.find("_updatedAt") != end) {
+        this->SetUpdatedAt(from["_updatedAt"].get<string>());
+    }
+
+    if(from.find("_createdAt") != end) {
+        this->SetCreatedAt(from["_createdAt"].get<string>());
+    }
+}
+
 /**
  * @brief Creates a json object
  * 

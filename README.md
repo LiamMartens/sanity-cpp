@@ -8,3 +8,6 @@
 
 ## Documentation
 Use [Doxygen](http://www.doxygen.nl/index.html) to generate the documentation. A default config file is provided (`.doxygen`)
+
+## Changelog
+[Changelog](https://changelogfy.com/sanity-cpp/announcements)

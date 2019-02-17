@@ -103,3 +103,36 @@ string SanityString::PadEndToLength(string from, unsigned int len, char c) {
     n.append(len - n.length(), c);
     return n;
 }
+
+/**
+ * @brief Converts a long into a hex string
+ * 
+ * @param hex
+ * @return stringz
+ */
+string SanityString::ToHex(long nr, unsigned int min_len) {
+    std::stringstream stream;
+    stream << hex << nr;
+    string r(stream.str());
+
+    if(min_len == 0) {
+        return r;
+    }
+
+    return r.length() < min_len
+        ? SanityString::PadStartToLength(r, min_len, '0')
+        : r;
+}
+
+/**
+ * @brief Trims certain characters from start and end
+ * 
+ * @param inp
+ * @param c
+ * @return string
+ */
+string SanityString::Trim(string inp, char c) {
+    char buff[sizeof(char) * 10];
+    sprintf(buff, "^\\%c+|\\%c+$", c, c);
+    return regex_replace(inp, regex(buff), "");
+}

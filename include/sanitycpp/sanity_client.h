@@ -68,6 +68,7 @@ public:
 
     SanityRequest* query(const SanityQuery& query) const;
     SanityRequest* mutate(const SanityMutations& mut) const;
+    SanityRequest* upload(string file, string mime_type) const;
 };
 
 #endif // SANITY_CLIENT_H

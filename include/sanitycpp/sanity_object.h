@@ -18,6 +18,7 @@
 #include "sanity_helpers.h"
 #include "isanity_cloneable.h"
 #include "isanity_jsonserializable.h"
+#include "isanity_jsonupdateable.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -45,7 +46,8 @@ class SanityObject_NoTypeException
 
 class SanityObject :
     public ISanityCloneable,
-    public ISanityJsonSerializable {
+    public ISanityJsonSerializable,
+    public ISanityJsonUpdateable {
 private:
     /** @var The id of the object */
     string m_id;
@@ -135,7 +137,6 @@ public:
     #pragma endregion
 
     #pragma region setters
-    virtual void Update(json from);
     void SetId(string id);
     void SetRevision(string rev);
     void SetType(string type);
@@ -153,6 +154,7 @@ public:
     #pragma endregion
 
     #pragma region overrides
+    virtual void Update(json from) override;
     virtual json toJson() const override;
     virtual SanityObject* clone() const override;
     #pragma endregion

@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+#include <regex>
+#include <iostream>
 #include "sanity_part_builder.h"
 
 using namespace std;
@@ -16,6 +19,8 @@ public:
     static string Join(vector<string> items, string delim = ",");
     static string PadStartToLength(string from, unsigned int len, char c);
     static string PadEndToLength(string from, unsigned int len, char c);
+    static string ToHex(long nr, unsigned int min_len = 0);
+    static string Trim(string inp, char c = ' ');
 };
 
 #endif // SANITY_STRING_H

@@ -18,4 +18,15 @@ TEST_CASE("Test string helper") {
             SanityString::Join(v) == "defined(param),left == right"
         );
     }
+
+    SECTION("Test trim") {
+        string inp = "aaabaaaaaa";
+        REQUIRE(SanityString::Trim(inp, 'a') == "b");
+
+        string inp2 = "baaa";
+        REQUIRE(SanityString::Trim(inp2, 'a') == "b");
+
+        string inp3 = "b...";
+        REQUIRE(SanityString::Trim(inp3, '.') == "b");
+    }
 }

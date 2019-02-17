@@ -12,10 +12,16 @@
 size_t SanityRequest::request_write_callback(char* data, size_t size, size_t data_size, void* userdata) {
     SanityRequest* req = (SanityRequest*)userdata;
 
-    char copy[data_size + 1];
-    memcpy(copy, data, data_size);
-    copy[data_size] = '\0';
-    req->m_response.Body += string(copy);
+    if(req->m_store_in_mem) {
+        char copy[data_size + 1];
+        memcpy(copy, data, data_size);
+        copy[data_size] = '\0';
+        req->m_response.Body += string(copy);
+    } else {
+        ofstream tmp(req->m_response.Body, ofstream::out | ofstream::app);
+        tmp.write(data, data_size);
+        tmp.close();
+    }
 
     if(req->m_on_data != nullptr) {
         req->m_on_data(data);
@@ -64,10 +70,19 @@ SanityRequest::SanityRequest(string url, string token) {
 
 #pragma region getters
 /**
+ * @brief Gets the mime type
+ * 
+ * @return string 
+ */
+string SanityRequest::MimeType() const {
+    return this->m_mime_type;
+}
+
+/**
  * Gets the stored token
  * @return string
  */
-string SanityRequest::Token() {
+string SanityRequest::Token() const {
     return this->m_token;
 }
 
@@ -75,7 +90,7 @@ string SanityRequest::Token() {
  * Gets the http method
  * @return SanityRequestMethod
  */
-SanityRequestMethod SanityRequest::Method() {
+SanityRequestMethod SanityRequest::Method() const {
     return this->m_method;
 }
 
@@ -83,7 +98,7 @@ SanityRequestMethod SanityRequest::Method() {
  * Gets the http verb from the method
  * @return string
  */
-string SanityRequest::Verb() {
+string SanityRequest::Verb() const {
     switch(this->m_method) {
         case SanityRequestMethod::POST:
             return this->HTTP_POST;
@@ -102,7 +117,7 @@ string SanityRequest::Verb() {
  * Gets the currently stored response
  * @return string
  */
-SanityRequestResponse SanityRequest::Response() {
+SanityRequestResponse SanityRequest::Response() const {
     return this->m_response;
 }
 #pragma endregion
@@ -113,6 +128,31 @@ SanityRequestResponse SanityRequest::Response() {
  */
 void SanityRequest::DontParseBody() {
     this->m_parse_body = false;
+}
+
+/**
+ * @brief Disables storing the response in memory, response will be saved to tmp file instead
+ * and respone body will contain tmp filename
+ */
+void SanityRequest::DontStoreInMem() {
+    this->DontParseBody();
+    this->m_store_in_mem = false;
+}
+
+/**
+ * @brief Enables keeping the tmp file
+ */
+void SanityRequest::KeepTmpFile() {
+    this->m_keep_tmp_file = true;
+}
+
+/**
+ * @brief Sets the request mime type
+ * 
+ * @param mime 
+ */
+void SanityRequest::SetMimeType(string mime) {
+    this->m_mime_type = mime;
 }
 
 /**
@@ -159,7 +199,7 @@ void SanityRequest::SetMethod(SanityRequestMethod method) {
     ) {
         this->m_method = SanityRequestMethod(method);
     } else {
-        throw InvalidMethodException();
+        throw SanityRequest_InvalidMethodException();
     }
 }
 
@@ -185,6 +225,16 @@ void SanityRequest::SetData(const SanityPartBuilder& builder) {
  */
 void SanityRequest::SetData(json data) {
     this->m_data = data.dump();
+}
+
+/**
+ * @brief Enables file upload for request
+ * 
+ * @param file 
+ */
+void SanityRequest::SetUploadFile(string file, string mime_type) {
+    this->SetMimeType(mime_type);
+    this->m_upload_file = file;
 }
 
 /**
@@ -216,12 +266,15 @@ void SanityRequest::SetOnParsedData(void(*on_parsed_data)(json data)) {
 
 /**
  * Performs the Sanity request
+ * @param void* Userdata to assign to response object
  * @return void
  */
-thread SanityRequest::perform() {
+thread SanityRequest::perform(void* userdata) {
     this->m_response = {
         "",
-        map<string, string>()
+        json(),
+        map<string, string>(),
+        userdata
     };
 
     CURL* handle;
@@ -232,20 +285,31 @@ thread SanityRequest::perform() {
     curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, &SanityRequest::request_header_callback);
     curl_easy_setopt(handle, CURLOPT_HEADERDATA, (void*)this);
 
+    FILE* uploadfile_fd;
+    struct stat uploadfile_stat;
+    if(!this->m_upload_file.empty()) {
+        uploadfile_fd = fopen(this->m_upload_file.c_str(), "rb");
+        if(!uploadfile_fd) throw SanityRequest_InvalidUploadFileException();
+        if(fstat(fileno(uploadfile_fd), &uploadfile_stat) != 0) throw SanityRequest_InvalidUploadFileException();
+        curl_easy_setopt(handle, CURLOPT_UPLOAD, true);
+        curl_easy_setopt(handle, CURLOPT_READDATA, uploadfile_fd);
+        curl_easy_setopt(handle, CURLOPT_INFILESIZE_LARGE, uploadfile_stat.st_size);
+    } else if(this->m_data != "") {
+        curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->m_data.c_str());
+    }
+
     // check http method
     if(this->m_method == SanityRequestMethod::POST) {
         curl_easy_setopt(handle, CURLOPT_POST, true);
+        curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, this->Verb().c_str());
     } else if(this->m_method != SanityRequestMethod::GET) {
         curl_easy_setopt(handle, CURLOPT_CUSTOMREQUEST, this->Verb().c_str());
-    }
-
-    if(this->m_data != "") {
-        curl_easy_setopt(handle, CURLOPT_POSTFIELDS, this->m_data.c_str());
     }
 
     // build header list
     curl_slist* headers = NULL;
     headers = curl_slist_append(headers, "Accept: application/json");
+    headers = curl_slist_append(headers, string("Content-Type: " + this->m_mime_type).c_str());
     if(this->m_token != "") {
         headers = curl_slist_append(headers, string("Authorization: Bearer " + this->m_token).c_str());
     }
@@ -261,13 +325,22 @@ thread SanityRequest::perform() {
             string(header_pair.first + ":" +header_pair.second).c_str()
         );
     }
+    curl_easy_setopt(handle, CURLOPT_VERBOSE, true);
     curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
 
     // perform request
     SanityRequestResponse* response = &this->m_response;
+    if(!this->m_store_in_mem) {
+        // create temp file
+        response->Body = tmpnam(nullptr);
+        ofstream f(response->Body);
+        f.close();
+    }
+    bool store_in_mem = this->m_store_in_mem;
+    bool keep_tmp_file = this->m_keep_tmp_file;
     bool parse_body = this->m_parse_body;
     void (*when_done)(SanityRequestResponse r) = this->m_when_done;
-    auto curl_task = [handle, parse_body, response, when_done]() {
+    auto curl_task = [handle, parse_body, store_in_mem, keep_tmp_file, response, when_done]() {
         CURLcode resp_code = curl_easy_perform(handle);
         if(resp_code != CURLE_OK) {
             string err = curl_easy_strerror(resp_code);
@@ -282,6 +355,10 @@ thread SanityRequest::perform() {
 
         if(when_done != nullptr) {
             when_done(*response);
+        }
+
+        if(!store_in_mem && !keep_tmp_file) {
+            remove(response->Body.c_str());
         }
     };
 

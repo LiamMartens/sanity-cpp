@@ -31,6 +31,9 @@ set(
     sanity_patch_diffmatch_mutation.cpp
     sanity_mutations.cpp
     sanity_modifiers.cpp
+    sanity_color.cpp
+    sanity_file.cpp
+    sanity_image.cpp
 )
 
 #  @add_library add library

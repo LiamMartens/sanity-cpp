@@ -115,4 +115,19 @@ SanityRequest* SanityClient::mutate(const SanityMutations& mut) const {
     req->SetData(mut);
     return req;
 }
+
+/**
+ * @brief Uploads a file
+ * 
+ * @param file 
+ * @return SanityRequest* 
+ */
+SanityRequest* SanityClient::upload(string file, string mime_type) const {
+    string path = mime_type.substr(0, 6) == "image/" ? "assets/images" : "assets/files";
+    SanityUrl url(this->ApiUrl(path));
+    SanityRequest* req = new SanityRequest(url.build(), this->m_token);
+    req->SetMethod(SanityRequestMethod::POST);
+    req->SetUploadFile(file, mime_type);
+    return req;
+}
 #pragma endregion

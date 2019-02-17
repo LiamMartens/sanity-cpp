@@ -1,14 +1,21 @@
 #include "sanity_reference.h"
 
-SanityReference::SanityReference() {
-    this->SetType("reference");
-}
-
-SanityReference::SanityReference(json from) : SanityObject(from) {
+SanityReference::SanityReference() : SanityObject(this->Type()) {}
+SanityReference::SanityReference(json from) : SanityObject(from, this->Type()) {
     this->Update(from);
 }
+SanityReference::SanityReference(const SanityReference& ref) : SanityReference(ref.toJson()) {}
 
 #pragma region getters
+/**
+ * @brief Enforced type
+ * 
+ * @return string 
+ */
+string SanityReference::Type() const {
+    return "reference";
+}
+
 /**
  * @brief Gets the ref
  * @return string

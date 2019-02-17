@@ -18,8 +18,10 @@ private:
 public:
     SanityReference();
     SanityReference(json from);
+    SanityReference(const SanityReference& ref);
 
     #pragma region getters
+    string Type() const override;
     string Ref() const;
     string Key() const;
     json SaveObject() const override;

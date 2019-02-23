@@ -14,6 +14,13 @@ class SanityHelpers_OneOf_NoneFound
 
 class SanityHelpers {
 public:
+    /**
+     * @brief Find one of by condition
+     * 
+     * @tparam T 
+     * @param one_of_map 
+     * @return T 
+     */
     template<typename T>
     static T OneOf(const map<T, bool>& one_of_map) {
         for(auto item : one_of_map) {
@@ -25,6 +32,13 @@ public:
         throw SanityHelpers_OneOf_NoneFound();
     };
 
+    /**
+     * @brief Find one of by condition and use default
+     * 
+     * @tparam T 
+     * @param one_of_map 
+     * @return T 
+     */
     template<typename T>
     static T OneOf(const map<T, bool>& one_of_map, T def) {
         for(auto item : one_of_map) {
@@ -36,6 +50,13 @@ public:
         return def;
     };
 
+    /**
+     * @brief Converts a tm object to string
+     * 
+     * @param t 
+     * @param include_time 
+     * @return string 
+     */
     static string TmToString(tm t, bool include_time = true) {
         string year = to_string(t.tm_year + 1900);
         string mon = SanityString::PadStartToLength(to_string(t.tm_mon + 1), 2, '0');
@@ -53,6 +74,44 @@ public:
 
         return year + "-" + mon + "-" + day;
     };
+
+    /**
+     * @brief Converts a string to tm object
+     * 
+     * @param s 
+     * @param include_time 
+     * @return tm 
+     */
+    static tm TmFromString(string str, bool include_time = true) {
+        int y,M,d,h,m;
+        float s;
+
+        if(include_time) {
+            sscanf(str.c_str(), "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
+        } else {
+            sscanf(str.c_str(), "%d-%d-%d", &y, &M, &d);
+        }
+
+        if(include_time) {
+            return tm{
+                .tm_sec = (int)s,
+                .tm_min = m,
+                .tm_hour = h,
+                .tm_mday = d,
+                .tm_mon = M - 1,
+                .tm_year = y - 1900
+            };
+        }
+
+        return tm{
+            .tm_sec = 0,
+            .tm_min = 0,
+            .tm_hour = 0,
+            .tm_mday = d,
+            .tm_mon = M - 1,
+            .tm_year = y - 1900
+        };
+    }
 
     /**
      * @brief Checks whether the tm is valid

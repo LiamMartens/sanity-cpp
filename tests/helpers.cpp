@@ -33,4 +33,9 @@ TEST_CASE("Test helpers") {
             SanityHelpers::TmToString(t) == "2019-01-01T10:00:00Z"
         );
     }
+
+    SECTION("Test string to tm") {
+        tm t = SanityHelpers::TmFromString("2019-01-01T10:00:00Z");
+        REQUIRE(t.tm_year == 2019 - 1900);
+    }
 }

@@ -25,7 +25,7 @@ TEST_CASE("Test Sanity Object") {
         o.SetCreatedAt("2019-01-01T10:00:00Z");
         o.SetUpdatedAt("2019-01-01T10:00:00Z");
         REQUIRE(
-            o.toJson().dump() == "{\"_createdAt\":\"2019-01-01T10:00:00Z\",\"_id\":\"aaa-bbb\",\"_rev\":\"ccc-ddd\",\"_type\":\"document\",\"_updatedAt\":\"3919-01-01T10:00:00Z\"}"
+            o.toJson().dump() == "{\"_createdAt\":\"2019-01-01T10:00:00Z\",\"_id\":\"aaa-bbb\",\"_rev\":\"ccc-ddd\",\"_type\":\"document\",\"_updatedAt\":\"2019-01-01T10:00:00Z\"}"
         );
     }
 }

@@ -114,17 +114,7 @@ void SanityObject::SetType(string type) {
  * @param string updatedAt
  */
 void SanityObject::SetUpdatedAt(string updatedAt) {
-    int y,M,d,h,m;
-    float s;
-    sscanf(updatedAt.c_str(), "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-    this->m_updated = {
-        .tm_sec = (int)s,
-        .tm_min = m,
-        .tm_hour = h,
-        .tm_mday = d,
-        .tm_mon = M - 1,
-        .tm_year = y
-    };
+    this->m_updated = SanityHelpers::TmFromString(updatedAt);
 }
 
 /**
@@ -140,17 +130,7 @@ void SanityObject::SetUpdatedAt(tm updatedAt) {
  * @param string createdAt
  */
 void SanityObject::SetCreatedAt(string createdAt) {
-    int y,M,d,h,m;
-    float s;
-    sscanf(createdAt.c_str(), "%d-%d-%dT%d:%d:%fZ", &y, &M, &d, &h, &m, &s);
-    this->m_created = {
-        .tm_sec = (int)s,
-        .tm_min = m,
-        .tm_hour = h,
-        .tm_mday = d,
-        .tm_mon = M - 1,
-        .tm_year = y - 1900
-    };
+    this->m_created = SanityHelpers::TmFromString(createdAt);
 }
 
 /**

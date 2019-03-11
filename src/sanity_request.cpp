@@ -325,7 +325,6 @@ thread SanityRequest::perform(void* userdata) {
             string(header_pair.first + ":" +header_pair.second).c_str()
         );
     }
-    curl_easy_setopt(handle, CURLOPT_VERBOSE, true);
     curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
 
     // perform request

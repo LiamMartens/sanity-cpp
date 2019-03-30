@@ -254,12 +254,12 @@ void SanityFile::Update(json from) {
 }
 
 /**
- * @brief Gets a json equivalent of the object
+ * @brief Shared json data
  * 
  * @return json 
  */
-json SanityFile::toJson() const {
-    json obj = SanityObject::toJson();
+json SanityFile::SharedJson() const {
+    json obj = SanityObject::SharedJson();
     obj["assetId"] = this->AssetId();
     obj["extension"] = this->Extension();
     obj["mimeType"] = this->MimeType();
@@ -268,6 +268,26 @@ json SanityFile::toJson() const {
     obj["sha1hash"] = this->Hash();
     obj["size"] = this->Size();
     obj["url"] = this->Url();
+    return obj;
+}
+
+/**
+ * @brief Gets a json equivalent of the object
+ * 
+ * @return json 
+ */
+json SanityFile::toJson() const {
+    json obj = SanityObject::toJson();
+    return obj;
+}
+
+/**
+ * @brief Gets the saveable object
+ * 
+ * @return json 
+ */
+json SanityFile::SaveObject() const {
+    json obj = SanityObject::SaveObject();
     return obj;
 }
 

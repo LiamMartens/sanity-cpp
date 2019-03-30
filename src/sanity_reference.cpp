@@ -23,31 +23,6 @@ string SanityReference::Type() const {
 string SanityReference::Ref() const {
     return this->m_ref;
 }
-
-/**
- * @brief Gets the array key
- * @return string
- */
-string SanityReference::Key() const {
-    return this->m_key;
-}
-
-/**
- * @brief Gets the save object
- * @return json
- */
-json SanityReference::SaveObject() const {
-    json obj = {
-        {"_type", this->Type()},
-        {"_ref", this->Ref()}
-    };
-
-    if(!this->Key().empty()) {
-        obj["_key"] = this->Key();
-    }
-
-    return obj;
-}
 #pragma endregion
 
 #pragma region setters
@@ -57,14 +32,6 @@ json SanityReference::SaveObject() const {
  */
 void SanityReference::SetRef(string ref) {
     this->m_ref = ref;
-}
-
-/**
- * @brief Sets the key
- * @param key
- */
-void SanityReference::SetKey(string key) {
-    this->m_key = key;
 }
 #pragma endregion
 
@@ -87,18 +54,36 @@ void SanityReference::Update(json from) {
 }
 
 /**
+ * @brief Gets the shared json
+ * 
+ * @return json 
+ */
+json SanityReference::SharedJson() const {
+    json obj = SanityObject::SharedJson();
+    obj["_ref"] = this->Ref();
+    return obj;
+}
+
+/**
  * @brief Converts the ref to json
  * 
  * @return json
  */
 json SanityReference::toJson() const {
     json o = SanityObject::toJson();
-    o["_ref"] = this->Ref();
-    if(!this->Key().empty()) {
-        o["_key"] = this->Key();
-    }
     return o;
 }
+
+/**
+ * @brief Gets the saveable object
+ * 
+ * @return json
+ */
+json SanityReference::SaveObject() const {
+    json o = SanityObject::SaveObject();
+    return o;
+}
+
 
 /**
  * @brief Creates a clone of the object

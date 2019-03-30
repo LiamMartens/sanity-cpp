@@ -48,6 +48,8 @@ public:
 
     #pragma region overrides
     void Update(json from) override;
+    json SharedJson() const override;
+    json SaveObject() const override;
     json toJson() const override;
     SanityObject* clone() const override;
     #pragma endregion
@@ -88,6 +90,8 @@ public:
 
     #pragma region overrides
     void Update(json from) override;
+    json SharedJson() const override;
+    json SaveObject() const override;
     json toJson() const override;
     SanityObject* clone() const override;
     #pragma endregion
@@ -121,6 +125,7 @@ public:
     #pragma region overrides
     void Update(json from) override;
     json toJson() const override;
+    json SaveObject() const override;
     SanityObject* clone() const override;
     #pragma endregion
 };
@@ -160,12 +165,15 @@ public:
 
     #pragma region overrides
     void Update(json from) override;
+    json SharedJson() const override;
+    json SaveObject() const override;
     json toJson() const override;
     SanityObject* clone() const override;
     #pragma endregion
 };
 #pragma endregion
 
+#pragma region SanityImage
 class SanityImage
     : public SanityFile {
 private:
@@ -189,8 +197,10 @@ public:
     #pragma region overrides
     void Update(json from) override;
     json toJson() const override;
+    json SaveObject() const override;
     SanityObject* clone() const override;
     #pragma endregion
 };
+#pragma endregion
 
 #endif // SANITY_IMAGE_H

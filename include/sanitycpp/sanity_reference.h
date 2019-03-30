@@ -13,8 +13,6 @@ class SanityReference
 private:
     /** @var The reference */
     string m_ref;
-    /** @var The ref key for arrays */
-    string m_key;
 public:
     SanityReference();
     SanityReference(json from);
@@ -23,18 +21,17 @@ public:
     #pragma region getters
     string Type() const override;
     string Ref() const;
-    string Key() const;
-    json SaveObject() const override;
     #pragma endregion
 
     #pragma region setters
     void SetRef(string ref);
-    void SetKey(string key);
     #pragma endregion
 
     #pragma region overrides
     void Update(json from) override;
+    json SharedJson() const override;
     json toJson() const override;
+    json SaveObject() const override;
     SanityObject* clone() const override;
     #pragma endregion
 };

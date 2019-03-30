@@ -108,15 +108,35 @@ void SanityImageDimensions::Update(json from) {
 }
 
 /**
+ * @brief Gets the shared json
+ * 
+ * @return json 
+ */
+json SanityImageDimensions::SharedJson() const {
+    json obj = SanityObject::SharedJson();
+    obj["aspectRatio"] = this->AspectRatio();
+    obj["width"] = this->Width();
+    obj["height"] = this->Height();
+    return obj;
+}
+
+/**
  * @brief Converts the object to json
  * 
  * @return json 
  */
 json SanityImageDimensions::toJson() const {
     json obj = SanityObject::toJson();
-    obj["aspectRatio"] = this->AspectRatio();
-    obj["width"] = this->Width();
-    obj["height"] = this->Height();
+    return obj;
+}
+
+/**
+ * @brief Gets the saveable object
+ * 
+ * @return json 
+ */
+json SanityImageDimensions::SaveObject() const {
+    json obj = SanityObject::SaveObject();
     return obj;
 }
 
@@ -256,16 +276,36 @@ void SanityImagePaletteSwatch::Update(json from) {
 }
 
 /**
+ * @brief Gets the shared json object
+ * 
+ * @return json 
+ */
+json SanityImagePaletteSwatch::SharedJson() const {
+    json obj = SanityObject::SharedJson();
+    obj["background"] = this->m_background.Hex();
+    obj["foreground"] = this->m_foreground.Hex();
+    obj["title"] = this->m_title.Hex();
+    obj["population"] = this->m_population;
+    return obj;
+}
+
+/**
  * @brief Converts to json
  *
  * @return json
  */
 json SanityImagePaletteSwatch::toJson() const {
     json obj = SanityObject::toJson();
-    obj["background"] = this->m_background.Hex();
-    obj["foreground"] = this->m_foreground.Hex();
-    obj["title"] = this->m_title.Hex();
-    obj["population"] = this->m_population;
+    return obj;
+}
+
+/**
+ * @brief Gets the save object
+ * 
+ * @return json 
+ */
+json SanityImagePaletteSwatch::SaveObject() const {
+    json obj = SanityObject::SaveObject();
     return obj;
 }
 
@@ -384,6 +424,19 @@ json SanityImagePalette::toJson() const {
     json obj = SanityObject::toJson();
     for(auto entry : this->m_swatches) {
         obj[entry.first] = entry.second.toJson();
+    }
+    return obj;
+}
+
+/**
+ * @brief Gets the saveable object
+ * 
+ * @return json 
+ */
+json SanityImagePalette::SaveObject() const {
+    json obj = SanityObject::SaveObject();
+    for(auto entry : this->m_swatches) {
+        obj[entry.first] = entry.second.SaveObject();
     }
     return obj;
 }
@@ -535,6 +588,17 @@ void SanityImageMetadata::Update(json from) {
 }
 
 /**
+ * @brief Gets the shared json
+ * 
+ * @return json 
+ */
+json SanityImageMetadata::SharedJson() const {
+    json obj = SanityObject::SharedJson();
+    obj["lqip"] = this->m_lqip;
+    return obj;
+}
+
+/**
  * @brief Converts the object to json
  * 
  * @return json 
@@ -542,8 +606,19 @@ void SanityImageMetadata::Update(json from) {
 json SanityImageMetadata::toJson() const {
     json obj = SanityObject::toJson();
     obj["dimensions"] = this->m_dimensions.toJson();
-    obj["lqip"] = this->m_lqip;
     obj["palette"] = this->m_palette.toJson();
+    return obj;
+}
+
+/**
+ * @brief Gets the saveable object
+ * 
+ * @return json 
+ */
+json SanityImageMetadata::SaveObject() const {
+    json obj = SanityObject::SaveObject();
+    obj["dimensions"] = this->m_dimensions.SaveObject();
+    obj["palette"] = this->m_palette.SaveObject();
     return obj;
 }
 
@@ -631,6 +706,17 @@ void SanityImage::Update(json from) {
 json SanityImage::toJson() const {
     json obj = SanityFile::toJson();
     obj["metadata"] = this->m_metadata.toJson();
+    return obj;
+}
+
+/**
+ * @brief Gets the saveable object
+ * 
+ * @return json 
+ */
+json SanityImage::SaveObject() const {
+    json obj = SanityFile::SaveObject();
+    obj["metadata"] = this->m_metadata.SaveObject();
     return obj;
 }
 

@@ -136,7 +136,6 @@ public:
     virtual string Type() const;
     tm UpdatedAt() const;
     tm CreatedAt() const;
-    virtual json SaveObject() const;
     #pragma endregion
 
     #pragma region setters
@@ -159,6 +158,8 @@ public:
 
     #pragma region overrides
     virtual void Update(json from) override;
+    virtual json SharedJson() const;
+    virtual json SaveObject() const;
     virtual json toJson() const override;
     virtual SanityObject* clone() const override;
     #pragma endregion

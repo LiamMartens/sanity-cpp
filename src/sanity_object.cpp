@@ -71,28 +71,6 @@ tm SanityObject::UpdatedAt() const {
 tm SanityObject::CreatedAt() const {
     return this->m_created;
 }
-
-/**
- * @brief The object to use when saving
- * 
- * @return json 
- */
-json SanityObject::SaveObject() const {
-    json o;
-    if(!this->Id().empty()) {
-        o["_id"] = this->Id();
-    }
-    if(!this->Key().empty()) {
-        o["_key"] = this->Key();
-    }
-    if(!this->Type().empty()) {
-        o["_type"] = this->Type();
-    }
-    if(!this->Revision().empty()) {
-        o["_rev"] = this->Revision();
-    }
-    return o;
-}
 #pragma endregion
 
 #pragma region setters
@@ -395,12 +373,43 @@ void SanityObject::Update(json from) {
 }
 
 /**
+ * @brief Defines shared json between toJson and SaveObject
+ * 
+ * @return json
+ */
+json SanityObject::SharedJson() const {
+    json o;
+    if(!this->Id().empty()) {
+        o["_id"] = this->Id();
+    }
+    if(!this->Key().empty()) {
+        o["_key"] = this->Key();
+    }
+    if(!this->Type().empty()) {
+        o["_type"] = this->Type();
+    }
+    if(!this->Revision().empty()) {
+        o["_rev"] = this->Revision();
+    }
+    return o;
+}
+
+/**
+ * @brief The object to use when saving
+ * 
+ * @return json 
+ */
+json SanityObject::SaveObject() const {
+    return this->SharedJson();
+}
+
+/**
  * @brief Creates a json object
  * 
  * @return json
  */
 json SanityObject::toJson() const {
-    json o = this->SaveObject();
+    json o = this->SharedJson();
 
     tm updated_at = this->UpdatedAt();
     if(SanityHelpers::IsValidTm(updated_at)) {

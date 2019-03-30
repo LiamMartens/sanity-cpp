@@ -2,6 +2,12 @@
 #define SANITY_HELPERS_H
 
 #include <map>
+#include <iostream>
+#include <sstream>
+#include <random>
+#include <climits>
+#include <functional>
+#include <algorithm>
 #include "sanity_string.h"
 using namespace std;
 
@@ -139,6 +145,25 @@ public:
 
         return true;
     };
+
+    static unsigned char randomChar() {
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> dis(0, 255);
+        return static_cast<unsigned char>(dis(gen));
+    }
+
+    static string generateKey(unsigned int len = 12) {
+        stringstream ss;
+        for(auto i = 0; i < len; i++) {
+            unsigned char rc = SanityHelpers::randomChar();
+            stringstream hexstream;
+            hexstream << hex << int(rc);
+            string hex = hexstream.str();
+            ss << (hex.length() < 2 ? '0' + hex : hex);
+        }
+        return ss.str();
+    }
 };
 
 #endif // SANITY_HELPERS_H

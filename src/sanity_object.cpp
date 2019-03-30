@@ -33,6 +33,14 @@ string SanityObject::Id() const {
 }
 
 /**
+ * @brief Gets the key of the object
+ * @return string 
+ */
+string SanityObject::Key() const {
+    return this->m_key;
+}
+
+/**
  * Gets the revision number of the obhect
  * @return string
  */
@@ -74,6 +82,9 @@ json SanityObject::SaveObject() const {
     if(!this->Id().empty()) {
         o["_id"] = this->Id();
     }
+    if(!this->Key().empty()) {
+        o["_key"] = this->Key();
+    }
     if(!this->Type().empty()) {
         o["_type"] = this->Type();
     }
@@ -91,6 +102,14 @@ json SanityObject::SaveObject() const {
  */
 void SanityObject::SetId(string id) {
     this->m_id = id;
+}
+
+/**
+ * @brief Sets the key
+ * @param key 
+ */
+void SanityObject::SetKey(string key) {
+    this->m_key = key;
 }
 
 /**
@@ -360,6 +379,10 @@ void SanityObject::Update(json from) {
 
     if(from.find("_rev") != end) {
         this->SetRevision(from["_rev"].get<string>());
+    }
+
+    if(from.find("_key") != end) {
+        this->SetKey(from["_key"].get<string>());
     }
 
     if(from.find("_updatedAt") != end) {

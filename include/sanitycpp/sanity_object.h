@@ -51,6 +51,8 @@ class SanityObject :
 private:
     /** @var The id of the object */
     string m_id;
+    /** @var The key of the object (optional for arrays) */
+    string m_key;
     /** @var The revision id */
     string m_revision;
     /** @var The type of the objet */
@@ -129,6 +131,7 @@ public:
 
     #pragma region getters
     string Id() const;
+    string Key() const;
     string Revision() const;
     virtual string Type() const;
     tm UpdatedAt() const;
@@ -138,6 +141,7 @@ public:
 
     #pragma region setters
     void SetId(string id);
+    void SetKey(string key);
     void SetRevision(string rev);
     void SetType(string type);
     void SetUpdatedAt(string updatedAt);

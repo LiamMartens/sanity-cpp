@@ -45,7 +45,7 @@ SanityColor::SanityColor(unsigned int r, unsigned int g, unsigned int b, float a
 }
 
 SanityColor::SanityColor(const SanityColor& color)
-    : SanityColor(color.A(), color.B(), color.B(), color.A()) {
+    : SanityColor(color.R(), color.G(), color.B(), color.A()) {
 }
 
 #pragma region getters

@@ -3,9 +3,9 @@
 
 TEST_CASE("Test color") {
     SECTION("Hex parse") {
-        SanityColor c = "#ff0000";
+        SanityColor c = "#ffaa00";
         REQUIRE(c.R() == 255);
-        REQUIRE(c.G() == 0);
+        REQUIRE(c.G() == 170);
         REQUIRE(c.B() == 0);
     }
 
@@ -34,5 +34,11 @@ TEST_CASE("Test color") {
         SanityColor c(10, 20, 30);
         REQUIRE(c.Rgb() == "rgb(10,20,30)");
         REQUIRE(c.Rgba() == "rgba(10,20,30,1)");
+    }
+
+    SECTION("Clone test") {
+        SanityColor c(10, 20, 30);
+        SanityColor clone = c;
+        REQUIRE(clone.Rgb() == "rgb(10,20,30)");
     }
 }

@@ -134,11 +134,7 @@ string SanityFile::Url() const {
  * @param id 
  */
 void SanityFile::SetAssetId(string id) {
-    if(regex_match(id, regex("^[a-zA-Z0-9]+$"))) {
-        this->m_asset_id = id;
-    } else {
-        throw SanityFile_InvalidAssetId();
-    }
+    this->m_asset_id = id;
 }
 
 /**

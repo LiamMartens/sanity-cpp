@@ -10,13 +10,6 @@ using json = nlohmann::json;
 using namespace std;
 
 #pragma region exceptions
-class SanityFile_InvalidAssetId
-    : public exception {
-    const char* what() const throw() {
-        return "Invalid asset ID";
-    }
-};
-
 class SanityFile_InvalidMimeType
     : public exception {
     const char* what() const throw() {

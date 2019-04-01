@@ -7,19 +7,6 @@ SanityObject::SanityObject(string override_type) {
 SanityObject::SanityObject(json from, string override_type)
     : SanityObject(override_type) {
     json::iterator end = from.end();
-
-    if(from.find("_id") != end) {
-        this->SetId(from["_id"].get<string>());
-    }
-
-    string derivedType = this->Type();
-    bool derivedTypeIsEmpty = derivedType.empty();
-    if(derivedTypeIsEmpty && from.find("_type") != end) {
-        this->SetType(from["_type"].get<string>());
-    } else if(!derivedTypeIsEmpty) {
-        this->SetType(derivedType);
-    }
-
     this->Update(from);
 }
 
@@ -354,6 +341,18 @@ bool SanityObject::Save(const SanityClient& client) {
  */
 void SanityObject::Update(json from) {
     json::iterator end = from.end();
+
+    if(from.find("_id") != end && this->Id().empty()) {
+        this->SetId(from["_id"].get<string>());
+    }
+
+    string derivedType = this->Type();
+    bool derivedTypeIsEmpty = derivedType.empty();
+    if(derivedTypeIsEmpty && from.find("_type") != end) {
+        this->SetType(from["_type"].get<string>());
+    } else if(!derivedTypeIsEmpty) {
+        this->SetType(derivedType);
+    }
 
     if(from.find("_rev") != end) {
         this->SetRevision(from["_rev"].get<string>());
